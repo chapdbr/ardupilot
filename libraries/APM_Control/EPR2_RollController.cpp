@@ -13,8 +13,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//	Code by Jon Challinger
-//  Modified by Paul Riseborough
+//	Code by Bruno Chapdelaine
 //
 
 #include <AP_HAL/AP_HAL.h>
