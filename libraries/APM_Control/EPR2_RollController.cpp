@@ -163,7 +163,7 @@ int32_t EPR2_RollController::get_servo_out(float desired_angle)
 	return constrain_float(_last_out * 100, -4500, 4500);
 }
 
-void AP_RollController::reset_I()
+void EPR2_RollController::reset_I()
 {
 	_pid_info.I = 0;
 }
