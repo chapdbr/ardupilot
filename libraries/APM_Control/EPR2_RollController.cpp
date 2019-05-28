@@ -94,7 +94,7 @@ int32_t EPR2_RollController::get_servo_out(float desired_angle)
         aspeed = 0.0f;
     }
 	// Compute proportional component
-	_pid_info.P = angle_error * gains.P;
+	_pid_info.P = angle_error * _kp;
 
 	// Compute derivative component if time has elapsed
 	if ((fabsf(gains.D) > 0) && (dt > 0)) {
@@ -122,7 +122,7 @@ int32_t EPR2_RollController::get_servo_out(float desired_angle)
 		_last_derivative    = derivative;
 
 		// add in derivative component
-		_pid_info.D = derivative * gains.D;
+		_pid_info.D = derivative * _kd;
 	}
 
 	// Multiply roll error by gains.I and integrate
@@ -131,7 +131,7 @@ int32_t EPR2_RollController::get_servo_out(float desired_angle)
 	if (!disable_integrator && ki_rate > 0) {
 		//only integrate if gain and time step are positive and airspeed above min value.
 		if (dt > 0 && aspeed > float(aparm.airspeed_min)) {
-		    float integrator_delta = angle_error * gains.I * delta_time;
+		    float integrator_delta = angle_error * _ki * delta_time;
 			// prevent the integrator from increasing if surface defln demand is above the upper limit
 			if (_last_out < -45) {
                 integrator_delta = MAX(integrator_delta , 0);
@@ -146,7 +146,7 @@ int32_t EPR2_RollController::get_servo_out(float desired_angle)
 	}
 	
     // Scale the integration limit
-    float intLimScaled = gains.imax * 0.01f;
+    float intLimScaled = _imax * 0.01f;
 
     // Constrain the integrator state
     _pid_info.I = constrain_float(_pid_info.I, -intLimScaled, intLimScaled);
@@ -157,7 +157,7 @@ int32_t EPR2_RollController::get_servo_out(float desired_angle)
 
     // Calculate the demanded control surface deflection (degrees) with the scaler
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
-	_last_out = _last_out * gains.scaler;
+	_last_out = _last_out * _scaler;
 	
 	// Convert to centi-degrees and constrain
 	return constrain_float(_last_out * 100, -4500, 4500);
