@@ -92,9 +92,7 @@ void Plane::stabilize_roll(float speed_scaler)
     if (control_mode == &mode_stabilize && channel_roll->get_control_in() != 0) {
         disable_integrator = true;
     }
-    SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, rollController.get_servo_out(nav_roll_cd - ahrs.roll_sensor, 
-                                                                                         speed_scaler, 
-                                                                                         disable_integrator));
+    SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, EPR2rollController.get_servo_out(0));
 }
 
 /*
@@ -399,6 +397,7 @@ void Plane::stabilize()
     /*
       see if we should zero the attitude controller integrators. 
      */
+    /*
     if (get_throttle_input() == 0 &&
         fabsf(relative_altitude) < 5.0f && 
         fabsf(barometer.get_climb_rate()) < 0.5f &&
@@ -415,6 +414,7 @@ void Plane::stabilize()
             steerController.reset_I();            
         }
     }
+    */
 }
 
 

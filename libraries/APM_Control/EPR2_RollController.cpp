@@ -25,24 +25,24 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 	// @Param: P
 	// @DisplayName: Proportional Gain
 	// @Description: Proportional gain from roll angle demands to ailerons. Higher values allow more servo response but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0.1 4.0
-	// @Increment: 0.1
+	// @Range: 0 1
+	// @Increment: 0.001
 	// @User: User
 	AP_GROUPINFO("P",        0, EPR2_RollController, _kp,        1.0f),
 
 	// @Param: I
 	// @DisplayName: Integrator Gain
 	// @Description: Integrator gain from long-term roll angle offsets to ailerons. Higher values "trim" out offsets faster but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0 1.0
-	// @Increment: 0.05
+	// @Range: 0 1
+	// @Increment: 0.001
 	// @User: User
 	AP_GROUPINFO("I",        1, EPR2_RollController, _ki,        0.3f),
 
 	// @Param: D
 	// @DisplayName: Damping Gain
 	// @Description: Damping gain from roll acceleration to ailerons. Higher values reduce rolling in turbulence, but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0 0.2
-	// @Increment: 0.01
+	// @Range: 0 1
+	// @Increment: 0.001
 	// @User: User
 	AP_GROUPINFO("D",        2, EPR2_RollController, _kd,        0.08f),
 
@@ -118,7 +118,7 @@ int32_t EPR2_RollController::get_servo_out(float desired_angle)
 					  (derivative - _last_derivative));
 
 		// update state
-		_last_error             = angle_error;
+		_last_error         = angle_error;
 		_last_derivative    = derivative;
 
 		// add in derivative component
