@@ -22,7 +22,7 @@ public:
 	EPR2_RollController(const EPR2_RollController &other) = delete;
 	EPR2_RollController &operator=(const EPR2_RollController&) = delete;
 
-	int32_t get_servo_out(int32_t angle_err);
+	int32_t get_servo_out(float desired_angle);
 
 	void reset_I();
 
