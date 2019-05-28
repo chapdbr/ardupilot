@@ -78,7 +78,8 @@ bool Plane::stick_mixing_enabled(void)
  */
 void Plane::stabilize_roll(float speed_scaler)
 {
-    if (fly_inverted()) {
+    /*
+	if (fly_inverted()) {
         // we want to fly upside down. We need to cope with wrap of
         // the roll_sensor interfering with wrap of nav_roll, which
         // would really confuse the PID code. The easiest way to
@@ -92,6 +93,7 @@ void Plane::stabilize_roll(float speed_scaler)
     if (control_mode == &mode_stabilize && channel_roll->get_control_in() != 0) {
         disable_integrator = true;
     }
+    */
     SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, EPR2rollController.get_servo_out(0));
 }
 
