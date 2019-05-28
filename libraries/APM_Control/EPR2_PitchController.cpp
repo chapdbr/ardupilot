@@ -17,18 +17,18 @@
 //
 
 #include <AP_HAL/AP_HAL.h>
-#include "EPR2_RollController.h"
+#include "EPR2_PitchController.h"
 
 extern const AP_HAL::HAL& hal;
 
-const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
+const AP_Param::GroupInfo EPR2_PitchController::var_info[] = {
 	// @Param: P
 	// @DisplayName: Proportional Gain
 	// @Description: Proportional gain from roll angle demands to ailerons. Higher values allow more servo response but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
 	// @Range: 0 1
 	// @Increment: 0.001
 	// @User: User
-	AP_GROUPINFO("P",        0, EPR2_RollController, _kp,        1.0f),
+	AP_GROUPINFO("P",        0, EPR2_PitchController, _kp,        1.000f),
 
 	// @Param: I
 	// @DisplayName: Integrator Gain
@@ -36,7 +36,7 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 	// @Range: 0 1
 	// @Increment: 0.001
 	// @User: User
-	AP_GROUPINFO("I",        1, EPR2_RollController, _ki,        0.3f),
+	AP_GROUPINFO("I",        1, EPR2_PitchController, _ki,        0.300f),
 
 	// @Param: D
 	// @DisplayName: Damping Gain
@@ -44,7 +44,7 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 	// @Range: 0 1
 	// @Increment: 0.001
 	// @User: User
-	AP_GROUPINFO("D",        2, EPR2_RollController, _kd,        0.08f),
+	AP_GROUPINFO("D",        2, EPR2_PitchController, _kd,        0.080f),
 
 	// @Param: IMAX
 	// @DisplayName: Integrator limit
@@ -52,7 +52,7 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 	// @Range: 0 4500
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("IMAX",      3, EPR2_RollController, _imax,        3000),
+	AP_GROUPINFO("IMAX",      3, EPR2_PitchController, _imax,        3000),
 
 	// @Param: SCALER
 	// @DisplayName: Command scaler
@@ -60,7 +60,7 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 	// @Range: 0 45
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("SCALER",      4, EPR2_RollController, _scaler,        45),
+	AP_GROUPINFO("SCALER",      4, EPR2_PitchController, _scaler,        45),
 
 
 	AP_GROUPEND
@@ -70,7 +70,7 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 /*
   internal bank angle controller, called by stabilize
 */
-int32_t EPR2_RollController::get_servo_out(float desired_angle)
+int32_t EPR2_PitchController::get_servo_out(float desired_angle)
 {
 
 	// Calculate delta time
@@ -82,9 +82,9 @@ int32_t EPR2_RollController::get_servo_out(float desired_angle)
 	_last_t = tnow;
 	float delta_time    = (float)dt * 0.001f;
     // Get body angle .roll_sensor (centi-degrees) ou .roll (radians)
-	float achieved_angle = _ahrs.roll_sensor * 0.001f;
+	float achieved_angle = _ahrs.pitch_sensor * 0.001f;
 	// Get body rate (degrees)
-	//float achieved_rate = _ahrs.get_gyro().x;
+	//float achieved_rate = _ahrs.get_gyro().y;
 	// Calculate the angle error (deg)
 	float angle_error = (desired_angle - achieved_angle);
 	
@@ -163,7 +163,7 @@ int32_t EPR2_RollController::get_servo_out(float desired_angle)
 	return constrain_float(_last_out * 100, -4500, 4500);
 }
 
-void EPR2_RollController::reset_I()
+void EPR2_PitchController::reset_I()
 {
 	_pid_info.I = 0;
 }

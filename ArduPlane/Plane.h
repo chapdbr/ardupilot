@@ -248,6 +248,7 @@ private:
 
     // EPR2 controllers
     EPR2_RollController EPR2rollController{ahrs, aparm};
+    EPR2_PitchController EPR2pitchController{ahrs, aparm};
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     SITL::SITL sitl;

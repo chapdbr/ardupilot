@@ -3,3 +3,4 @@
 #include "AP_YawController.h"
 #include "AP_SteerController.h"
 #include "EPR2_RollController.h"
+#include "EPR2_PitchController.h"

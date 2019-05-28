@@ -942,13 +942,17 @@ const AP_Param::Info Plane::var_info[] = {
     // @Path: ../libraries/APM_Control/AP_RollController.cpp
 	GOBJECT(rollController,         "RLL2SRV_",   AP_RollController),
 
-	// @Group: RLL2SRV_
+	// @Group: EPR2ROLL_
 	// @Path: ../libraries/APM_Control/EPR2_RollController.cpp
 	GOBJECT(EPR2rollController,         "EPR2ROLL_",   EPR2_RollController),
 
     // @Group: PTCH2SRV_
     // @Path: ../libraries/APM_Control/AP_PitchController.cpp
 	GOBJECT(pitchController,        "PTCH2SRV_",  AP_PitchController),
+
+	// @Group: EPR2PTCH_
+	// @Path: ../libraries/APM_Control/EPR2_RollController.cpp
+	GOBJECT(EPR2pitchController,         "EPR2PTCH_",   EPR2_PitchController),
 
     // @Group: YAW2SRV_
     // @Path: ../libraries/APM_Control/AP_YawController.cpp

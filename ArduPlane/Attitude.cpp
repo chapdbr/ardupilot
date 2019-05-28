@@ -94,7 +94,7 @@ void Plane::stabilize_roll(float speed_scaler)
         disable_integrator = true;
     }
     */
-    SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, EPR2rollController.get_servo_out(0));
+    SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, EPR2rollController.get_servo_out(0.0f));
 }
 
 /*
