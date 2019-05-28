@@ -14,14 +14,15 @@ public:
         , _ahrs(ahrs)
     {
         AP_Param::setup_object_defaults(this, var_info);
+        // set _last_derivative as invalid when we startup
+		_last_derivative = NAN;
     }
 
     /* Do not allow copies */
 	EPR2_RollController(const EPR2_RollController &other) = delete;
 	EPR2_RollController &operator=(const EPR2_RollController&) = delete;
 
-	int32_t get_rate_out(float desired_rate, float scaler);
-	int32_t get_servo_out(int32_t angle_err, float scaler, bool disable_integrator);
+	int32_t get_servo_out(int32_t angle_err);
 
 	void reset_I();
 
@@ -29,29 +30,24 @@ public:
 
 	static const struct AP_Param::GroupInfo var_info[];
 
-
-    // tuning accessors
-    void kP(float v) { gains.P.set(v); }
-    void kI(float v) { gains.I.set(v); }
-    void kD(float v) { gains.D.set(v); }
-    void kFF(float v) { gains.FF.set(v); }
-
-    AP_Float &kP(void) { return gains.P; }
-    AP_Float &kI(void) { return gains.I; }
-    AP_Float &kD(void) { return gains.D; }
-    AP_Float &kFF(void) { return gains.FF; }
-
 private:
     const AP_Vehicle::FixedWing &aparm;
-    AP_AutoTune::ATGains gains;
-    AP_AutoTune autotune;
+
 	uint32_t _last_t;
 	float _last_out;
+	float _integrator;///< integrator value
+	float _last_error;///< last error for derivative
+	float _last_derivative;///< last derivative for low-pass filter
 
     AP_Logger::PID_Info _pid_info;
 
-	int32_t _get_rate_out(float desired_rate, float scaler, bool disable_integrator);
-
 	AP_AHRS &_ahrs;
+
+	/// Low pass filter cut frequency for derivative calculation.
+	    ///
+	    /// 20 Hz because anything over that is probably noise, see
+	    /// http://en.wikipedia.org/wiki/Low-pass_filter.
+	    ///
+	    static const uint8_t        _fCut = 20;
 
 };

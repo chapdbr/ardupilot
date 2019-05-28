@@ -22,30 +22,13 @@
 extern const AP_HAL::HAL& hal;
 
 const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
-	// @Param: TCONST
-	// @DisplayName: Roll Time Constant
-	// @Description: Time constant in seconds from demanded to achieved roll angle. Most models respond well to 0.5. May be reduced for faster responses, but setting lower than a model can achieve will not help.
-	// @Range: 0.4 1.0
-	// @Units: s
-	// @Increment: 0.1
-	// @User: Advanced
-	AP_GROUPINFO("TCONST",      0, EPR2_RollController, gains.tau,       0.5f),
-
 	// @Param: P
 	// @DisplayName: Proportional Gain
 	// @Description: Proportional gain from roll angle demands to ailerons. Higher values allow more servo response but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
 	// @Range: 0.1 4.0
 	// @Increment: 0.1
 	// @User: User
-	AP_GROUPINFO("P",        1, EPR2_RollController, gains.P,        1.0f),
-
-	// @Param: D
-	// @DisplayName: Damping Gain
-	// @Description: Damping gain from roll acceleration to ailerons. Higher values reduce rolling in turbulence, but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0 0.2
-	// @Increment: 0.01
-	// @User: User
-	AP_GROUPINFO("D",        2, EPR2_RollController, gains.D,        0.08f),
+	AP_GROUPINFO("P",        0, EPR2_RollController, _kp,        1.0f),
 
 	// @Param: I
 	// @DisplayName: Integrator Gain
@@ -53,16 +36,15 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 	// @Range: 0 1.0
 	// @Increment: 0.05
 	// @User: User
-	AP_GROUPINFO("I",        3, EPR2_RollController, gains.I,        0.3f),
+	AP_GROUPINFO("I",        1, EPR2_RollController, _ki,        0.3f),
 
-	// @Param: RMAX
-	// @DisplayName: Maximum Roll Rate
-	// @Description: Maximum roll rate that the roll controller demands (degrees/sec) in ACRO mode.
-	// @Range: 0 180
-	// @Units: deg/s
-	// @Increment: 1
-	// @User: Advanced
-	AP_GROUPINFO("RMAX",   4, EPR2_RollController, gains.rmax,       0),
+	// @Param: D
+	// @DisplayName: Damping Gain
+	// @Description: Damping gain from roll acceleration to ailerons. Higher values reduce rolling in turbulence, but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
+	// @Range: 0 0.2
+	// @Increment: 0.01
+	// @User: User
+	AP_GROUPINFO("D",        2, EPR2_RollController, _kd,        0.08f),
 
 	// @Param: IMAX
 	// @DisplayName: Integrator limit
@@ -70,61 +52,86 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 	// @Range: 0 4500
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("IMAX",      5, EPR2_RollController, gains.imax,        3000),
+	AP_GROUPINFO("IMAX",      3, EPR2_RollController, _imax,        3000),
 
-	// @Param: FF
-	// @DisplayName: Feed forward Gain
-	// @Description: Gain from demanded rate to aileron output. 
-	// @Range: 0.1 4.0
-	// @Increment: 0.1
-	// @User: User
-	AP_GROUPINFO("FF",        6, EPR2_RollController, gains.FF,          0.0f),
+	// @Param: SCALER
+	// @DisplayName: Command scaler
+	// @Description: Scale the command to degrees according to the range of motion.
+	// @Range: 0 45
+	// @Increment: 1
+	// @User: Advanced
+	AP_GROUPINFO("SCALER",      4, EPR2_RollController, _scaler,        45),
+
 
 	AP_GROUPEND
 };
 
 
 /*
-  internal rate controller, called by attitude and rate controller
-  public functions
+  internal bank angle controller, called by stabilize
 */
-int32_t AP_RollController::_get_rate_out(float desired_rate, float scaler, bool disable_integrator)
+int32_t AP_RollController::get_servo_out(float desired_angle)
 {
+
+	// Calculate delta time
 	uint32_t tnow = AP_HAL::millis();
 	uint32_t dt = tnow - _last_t;
 	if (_last_t == 0 || dt > 1000) {
 		dt = 0;
 	}
 	_last_t = tnow;
-	
-	// Calculate equivalent gains so that values for K_P and K_I can be taken across from the old PID law
-    // No conversion is required for K_D
-	float ki_rate = gains.I * gains.tau;
-    float eas2tas = _ahrs.get_EAS2TAS();
-	float kp_ff = MAX((gains.P - gains.I * gains.tau) * gains.tau  - gains.D , 0) / eas2tas;
-    float k_ff = gains.FF / eas2tas;
 	float delta_time    = (float)dt * 0.001f;
-    // Get body rate vector (radians/sec)
-	float omega_x = _ahrs.get_gyro().x;
-	
-	// Calculate the roll rate error (deg/sec) and apply gain scaler
-    float achieved_rate = ToDeg(omega_x);
-	float rate_error = (desired_rate - achieved_rate) * scaler;
+    // Get body angle .roll_sensor (centi-degrees) ou .roll (radians)
+	float achieved_angle = _ahrs.roll_sensor;
+	// Get body rate (degrees)
+	float achieved_rate = ToDeg(omega_x);
+	// Calculate the angle error (deg)
+	float angle_error = (desired_angle - achieved_angle);
 	
 	// Get an airspeed estimate - default to zero if none available
 	float aspeed;
 	if (!_ahrs.airspeed_estimate(&aspeed)) {
         aspeed = 0.0f;
     }
+	// Compute proportional component
+	_pid_info.P = angle_error * gains.P;
 
-	// Multiply roll rate error by _ki_rate, apply scaler and integrate
-	// Scaler is applied before integrator so that integrator state relates directly to aileron deflection
-	// This means aileron trim offset doesn't change as the value of scaler changes with airspeed
+	// Compute derivative component if time has elapsed
+	if ((fabsf(gains.D) > 0) && (dt > 0)) {
+		float derivative;
+
+		if (isnan(_last_derivative)) {
+			// we've just done a reset, suppress the first derivative
+			// term as we don't want a sudden change in input to cause
+			// a large D output change
+			derivative = 0;
+			_last_derivative = 0;
+		} else {
+			derivative = (angle_error - _last_error) / delta_time;
+		}
+
+		// discrete low pass filter, cuts out the
+		// high frequency noise that can drive the controller crazy
+		float RC = 1/(2*M_PI*_fCut);
+		derivative = _last_derivative +
+					 ((delta_time / (RC + delta_time)) *
+					  (derivative - _last_derivative));
+
+		// update state
+		_last_error             = error;
+		_last_derivative    = derivative;
+
+		// add in derivative component
+		_pid_info.D = derivative * gains.D;
+	}
+
+	// Multiply roll error by gains.I and integrate
+
 	// Don't integrate if in stabilise mode as the integrator will wind up against the pilots inputs
 	if (!disable_integrator && ki_rate > 0) {
 		//only integrate if gain and time step are positive and airspeed above min value.
 		if (dt > 0 && aspeed > float(aparm.airspeed_min)) {
-		    float integrator_delta = rate_error * ki_rate * delta_time * scaler;
+		    float integrator_delta = angle_error * gains.I * delta_time;
 			// prevent the integrator from increasing if surface defln demand is above the upper limit
 			if (_last_out < -45) {
                 integrator_delta = MAX(integrator_delta , 0);
@@ -144,71 +151,16 @@ int32_t AP_RollController::_get_rate_out(float desired_rate, float scaler, bool 
     // Constrain the integrator state
     _pid_info.I = constrain_float(_pid_info.I, -intLimScaled, intLimScaled);
 	
-	// Calculate the demanded control surface deflection
-	// Note the scaler is applied again. We want a 1/speed scaler applied to the feed-forward
-	// path, but want a 1/speed^2 scaler applied to the rate error path. 
-	// This is because acceleration scales with speed^2, but rate scales with speed.
-    _pid_info.D = rate_error * gains.D * scaler;
-    _pid_info.P = desired_rate * kp_ff * scaler;
-    _pid_info.FF = desired_rate * k_ff * scaler;
-    _pid_info.desired = desired_rate;
-    _pid_info.actual = achieved_rate;
+	// Save desired and achieved angles
+    _pid_info.desired = desired_angle;
+    _pid_info.actual = achieved_angle;
 
-	_last_out = _pid_info.FF + _pid_info.P + _pid_info.D;
-
-    if (autotune.running && aspeed > aparm.airspeed_min) {
-        // let autotune have a go at the values 
-        // Note that we don't pass the integrator component so we get
-        // a better idea of how much the base PD controller
-        // contributed
-        autotune.update(desired_rate, achieved_rate, _last_out);
-    }
-
-	_last_out += _pid_info.I;
+    // Calculate the demanded control surface deflection (degrees) with the scaler
+	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
+	_last_out = _last_out * gains.scaler;
 	
 	// Convert to centi-degrees and constrain
 	return constrain_float(_last_out * 100, -4500, 4500);
-}
-
-
-/*
- Function returns an equivalent elevator deflection in centi-degrees in the range from -4500 to 4500
- A positive demand is up
- Inputs are: 
- 1) desired roll rate in degrees/sec
- 2) control gain scaler = scaling_speed / aspeed
-*/
-int32_t AP_RollController::get_rate_out(float desired_rate, float scaler)
-{
-    return _get_rate_out(desired_rate, scaler, false);
-}
-
-/*
- Function returns an equivalent aileron deflection in centi-degrees in the range from -4500 to 4500
- A positive demand is up
- Inputs are: 
- 1) demanded bank angle in centi-degrees
- 2) control gain scaler = scaling_speed / aspeed
- 3) boolean which is true when stabilise mode is active
- 4) minimum FBW airspeed (metres/sec)
-*/
-int32_t AP_RollController::get_servo_out(int32_t angle_err, float scaler, bool disable_integrator)
-{
-    if (gains.tau < 0.1f) {
-        gains.tau.set(0.1f);
-    }
-	
-	// Calculate the desired roll rate (deg/sec) from the angle error
-	float desired_rate = angle_err * 0.01f / gains.tau;
-
-    // Limit the demanded roll rate
-    if (gains.rmax && desired_rate < -gains.rmax) {
-        desired_rate = - gains.rmax;
-    } else if (gains.rmax && desired_rate > gains.rmax) {
-        desired_rate = gains.rmax;
-    }
-
-    return _get_rate_out(desired_rate, scaler, disable_integrator);
 }
 
 void AP_RollController::reset_I()
