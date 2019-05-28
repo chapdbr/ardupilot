@@ -84,7 +84,7 @@ int32_t EPR2_RollController::get_servo_out(float desired_angle)
     // Get body angle .roll_sensor (centi-degrees) ou .roll (radians)
 	float achieved_angle = _ahrs.roll_sensor;
 	// Get body rate (degrees)
-	float achieved_rate = ToDeg(omega_x);
+	float achieved_rate = _ahrs.get_gyro().x;
 	// Calculate the angle error (deg)
 	float angle_error = (desired_angle - achieved_angle);
 	
