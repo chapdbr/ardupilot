@@ -128,7 +128,7 @@ int32_t EPR2_RollController::get_servo_out(float desired_angle)
 	// Multiply roll error by gains.I and integrate
 
 	// Don't integrate if in stabilise mode as the integrator will wind up against the pilots inputs
-	if (!disable_integrator && _ki > 0) {
+	if (_ki > 0) {
 		//only integrate if gain and time step are positive and airspeed above min value.
 		if (dt > 0 && aspeed > float(aparm.airspeed_min)) {
 		    float integrator_delta = angle_error * _ki * delta_time;
