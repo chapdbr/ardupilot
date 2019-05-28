@@ -70,7 +70,7 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 /*
   internal bank angle controller, called by stabilize
 */
-int32_t AP_RollController::get_servo_out(float desired_angle)
+int32_t EPR2_RollController::get_servo_out(float desired_angle)
 {
 
 	// Calculate delta time
