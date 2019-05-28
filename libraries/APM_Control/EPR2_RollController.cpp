@@ -118,7 +118,7 @@ int32_t EPR2_RollController::get_servo_out(float desired_angle)
 					  (derivative - _last_derivative));
 
 		// update state
-		_last_error             = error;
+		_last_error             = angle_error;
 		_last_derivative    = derivative;
 
 		// add in derivative component
