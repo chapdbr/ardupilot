@@ -33,6 +33,12 @@ public:
 private:
     const AP_Vehicle::FixedWing &aparm;
 
+    AP_Float        _kp;
+	AP_Float        _ki;
+	AP_Float        _kd;
+	AP_Int16        _imax;
+	AP_Int16		_scaler;
+
 	uint32_t _last_t;
 	float _last_out;
 	float _integrator;///< integrator value
