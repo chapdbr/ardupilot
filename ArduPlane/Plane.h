@@ -246,6 +246,9 @@ private:
     AP_YawController yawController{ahrs, aparm};
     AP_SteerController steerController{ahrs};
 
+    // EPR2 controllers
+    EPR2_RollController EPR2rollController{ahrs, aparm};
+
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     SITL::SITL sitl;
 #endif

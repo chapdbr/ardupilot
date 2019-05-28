@@ -342,6 +342,8 @@ public:
         k_param_mixing_offset,
         k_param_dspoiler_rud_rate,
 
+		k_param_EPR2rollController,
+
         k_param_logger = 253, // Logging Group
 
         // 254,255: reserved
