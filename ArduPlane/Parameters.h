@@ -337,7 +337,7 @@ public:
         k_param_pidServoRudder, // unused
         k_param_pidTeThrottle, // unused
         k_param_pidNavPitchAltitude, // unused
-        k_param_pidWheelSteer, // unused
+        k_param_epr2ThrottleController, // replaced unused pidWheelSteer by epr2ThrottleController
 
         k_param_mixing_offset,
         k_param_dspoiler_rud_rate,

@@ -5,3 +5,4 @@
 #include "EPR2_RollController.h"
 #include "EPR2_PitchController.h"
 #include "EPR2_AltController.h"
+#include "EPR2_ThrottleController.h"

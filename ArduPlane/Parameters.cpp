@@ -958,6 +958,10 @@ const AP_Param::Info Plane::var_info[] = {
 	// @Path: ../libraries/APM_Control/EPR2_AltController.cpp
 	GOBJECT(epr2AltController,         "EPR2ALT_",   EPR2_AltController),
 
+	// @Group: EPR2THR_
+	// @Path: ../libraries/APM_Control/EPR2_ThrottleController.cpp
+	GOBJECT(epr2ThrottleController,         "EPR2THR_",   EPR2_ThrottleController),
+
     // @Group: YAW2SRV_
     // @Path: ../libraries/APM_Control/AP_YawController.cpp
 	GOBJECT(yawController,          "YAW2SRV_",   AP_YawController),
