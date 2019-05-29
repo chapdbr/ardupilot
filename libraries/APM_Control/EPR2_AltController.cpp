@@ -105,7 +105,7 @@ float EPR2_AltController::get_desired_pitch(void)
         aspeed = 0.0f;
     }
 	// Compute proportional component
-	_pid_info.P = angle_error * _kp;
+	_pid_info.P = alt_error * _kp;
 
 	// Compute derivative component if time has elapsed
 	if ((fabsf(_kd) > 0) && (dt > 0)) {
@@ -118,7 +118,7 @@ float EPR2_AltController::get_desired_pitch(void)
 			derivative = 0;
 			_last_derivative = 0;
 		} else {
-			derivative = (angle_error - _last_error) / delta_time;
+			derivative = (alt_error - _last_error) / delta_time;
 		}
 
 		// discrete low pass filter, cuts out the
@@ -129,7 +129,7 @@ float EPR2_AltController::get_desired_pitch(void)
 					  (derivative - _last_derivative));
 
 		// update state
-		_last_error         = angle_error;
+		_last_error         = alt_error;
 		_last_derivative    = derivative;
 
 		// add in derivative component
@@ -142,7 +142,7 @@ float EPR2_AltController::get_desired_pitch(void)
 	if (_ki > 0) {
 		//only integrate if gain and time step are positive and airspeed above min value.
 		if (dt > 0 && aspeed > float(aparm.airspeed_min)) {
-		    float integrator_delta = angle_error * _ki * delta_time;
+		    float integrator_delta = alt_error * _ki * delta_time;
 			// prevent the integrator from increasing if surface defln demand is above the upper limit
 			if (_last_out < -45) {
                 integrator_delta = MAX(integrator_delta , 0);
