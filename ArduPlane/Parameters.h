@@ -344,6 +344,7 @@ public:
 
 		k_param_EPR2rollController,
 		k_param_EPR2pitchController,
+		k_param_EPR2altController,
 
         k_param_logger = 253, // Logging Group
 

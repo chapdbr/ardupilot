@@ -17,18 +17,18 @@
 //
 
 #include <AP_HAL/AP_HAL.h>
-#include "EPR2_RollController.h"
+#include "EPR2_AltController.h"
 
 extern const AP_HAL::HAL& hal;
 
-const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
+const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Param: P
 	// @DisplayName: Proportional Gain
 	// @Description: Proportional gain from roll angle demands to ailerons. Higher values allow more servo response but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
 	// @Range: 0 1
 	// @Increment: 0.001
 	// @User: User
-	AP_GROUPINFO("P",        0, EPR2_RollController, _kp,        1.0f),
+	AP_GROUPINFO("P",        0, EPR2_AltController, _kp,        1.000f),
 
 	// @Param: I
 	// @DisplayName: Integrator Gain
@@ -36,7 +36,7 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 	// @Range: 0 1
 	// @Increment: 0.001
 	// @User: User
-	AP_GROUPINFO("I",        1, EPR2_RollController, _ki,        0.3f),
+	AP_GROUPINFO("I",        1, EPR2_AltController, _ki,        0.300f),
 
 	// @Param: D
 	// @DisplayName: Damping Gain
@@ -44,7 +44,7 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 	// @Range: 0 1
 	// @Increment: 0.001
 	// @User: User
-	AP_GROUPINFO("D",        2, EPR2_RollController, _kd,        0.08f),
+	AP_GROUPINFO("D",        2, EPR2_AltController, _kd,        0.080f),
 
 	// @Param: IMAX
 	// @DisplayName: Integrator limit
@@ -52,7 +52,7 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 	// @Range: 0 4500
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("IMAX",      3, EPR2_RollController, _imax,        3000),
+	AP_GROUPINFO("IMAX",      3, EPR2_AltController, _imax,        3000),
 
 	// @Param: SCALER
 	// @DisplayName: Command scaler
@@ -60,16 +60,17 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 	// @Range: 0 45
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("SCALER",      4, EPR2_RollController, _scaler,        45),
+	AP_GROUPINFO("SCALER",      4, EPR2_AltController, _scaler,        45),
 
 	// @Param: TARGET
-	// @DisplayName: Roll target
-	// @Description: Roll target.
-	// @Units: deg
-	// @Range: -10 10
-	// @Increment: 1
+	// @DisplayName: Altitude target
+	// @Description: Altitude target.
+	// @Units: m
+	// @Range: 0 100
+	// @Increment: 0.5
 	// @User: Advanced
-	AP_GROUPINFO("TARGET",      5, EPR2_RollController, _target,        0),
+	AP_GROUPINFO("TARGET",      5, EPR2_AltController, _target,        3),
+
 
 	AP_GROUPEND
 };
@@ -78,7 +79,7 @@ const AP_Param::GroupInfo EPR2_RollController::var_info[] = {
 /*
   internal bank angle controller, called by stabilize
 */
-int32_t EPR2_RollController::get_servo_out(void)
+float EPR2_AltController::get_desired_pitch(void)
 {
 
 	// Calculate delta time
@@ -89,12 +90,14 @@ int32_t EPR2_RollController::get_servo_out(void)
 	}
 	_last_t = tnow;
 	float delta_time    = (float)dt * 0.001f;
-    // Get body angle .roll_sensor (centi-degrees) ou .roll (radians)
-	float achieved_angle = _ahrs.roll_sensor * 0.001f;
-	// Get body rate (degrees)
-	//float achieved_rate = _ahrs.get_gyro().x;
-	// Calculate the angle error (deg)
-	float angle_error = (_target - achieved_angle);
+    // Get altitude
+	// return a Down position relative to home in meters
+	// if EKF is unavailable will return the baro altitude
+	_ahrs.get_relative_position_D_home(_height);
+	_height *= -1.0f;
+
+	// Calculate the altitude error (m)
+	float alt_error = (_target - _height);
 	
 	// Get an airspeed estimate - default to zero if none available
 	float aspeed;
@@ -160,18 +163,18 @@ int32_t EPR2_RollController::get_servo_out(void)
     _pid_info.I = constrain_float(_pid_info.I, -intLimScaled, intLimScaled);
 	
 	// Save desired and achieved angles
-    _pid_info.desired = desired_angle;
-    _pid_info.actual = achieved_angle;
+    _pid_info.desired = _target;
+    _pid_info.actual = _height;
 
     // Calculate the demanded control surface deflection (degrees) with the scaler
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
 	_last_out = _last_out * _scaler;
 	
-	// Convert to centi-degrees and constrain
-	return constrain_float(_last_out * 100, -4500, 4500);
+	// Convert to centi-degrees, constrain and call the pitch controller
+	return constrain_float(_last_out, -60, 60);
 }
 
-void EPR2_RollController::reset_I()
+void EPR2_AltController::reset_I()
 {
 	_pid_info.I = 0;
 }

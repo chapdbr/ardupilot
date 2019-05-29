@@ -22,7 +22,7 @@ public:
 	EPR2_RollController(const EPR2_RollController &other) = delete;
 	EPR2_RollController &operator=(const EPR2_RollController&) = delete;
 
-	int32_t get_servo_out(float desired_angle);
+	int32_t get_servo_out(void);
 
 	void reset_I();
 
@@ -38,6 +38,7 @@ private:
 	AP_Float        _kd;
 	AP_Int16        _imax;
 	AP_Int16		_scaler;
+	AP_Float		_target;
 
 	uint32_t _last_t;
 	float _last_out;
@@ -50,10 +51,10 @@ private:
 	AP_AHRS &_ahrs;
 
 	/// Low pass filter cut frequency for derivative calculation.
-	    ///
-	    /// 20 Hz because anything over that is probably noise, see
-	    /// http://en.wikipedia.org/wiki/Low-pass_filter.
-	    ///
-	    static const uint8_t        _fCut = 20;
+	///
+	/// 20 Hz because anything over that is probably noise, see
+	/// http://en.wikipedia.org/wiki/Low-pass_filter.
+	///
+	static const uint8_t        _fCut = 20;
 
 };

@@ -247,8 +247,9 @@ private:
     AP_SteerController steerController{ahrs};
 
     // EPR2 controllers
-    EPR2_RollController EPR2rollController{ahrs, aparm};
-    EPR2_PitchController EPR2pitchController{ahrs, aparm};
+    EPR2_RollController epr2RollController{ahrs, aparm};
+    EPR2_PitchController epr2PitchController{ahrs, aparm};
+    EPR2_AltController epr2AltController{ahrs, aparm};
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     SITL::SITL sitl;

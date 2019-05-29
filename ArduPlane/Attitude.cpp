@@ -94,7 +94,7 @@ void Plane::stabilize_roll(float speed_scaler)
         disable_integrator = true;
     }
     */
-    SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, EPR2rollController.get_servo_out(0.0f));
+    SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, epr2RollController.get_servo_out());
 }
 
 /*
@@ -116,9 +116,7 @@ void Plane::stabilize_pitch(float speed_scaler)
     if (control_mode == &mode_stabilize && channel_pitch->get_control_in() != 0) {
         disable_integrator = true;
     }
-    SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, pitchController.get_servo_out(demanded_pitch - ahrs.pitch_sensor, 
-                                                                                           speed_scaler, 
-                                                                                           disable_integrator));
+    SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, epr2PitchController.get_servo_out(epr2AltController.get_desired_pitch()));
 }
 
 /*

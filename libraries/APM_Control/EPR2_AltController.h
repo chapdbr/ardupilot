@@ -6,10 +6,11 @@
 #include "AP_AutoTune.h"
 #include <AP_Logger/AP_Logger.h>
 #include <AP_Math/AP_Math.h>
+#include "EPR2_PitchController.h"
 
-class EPR2_PitchController {
+class EPR2_AltController {
 public:
-	EPR2_PitchController(AP_AHRS &ahrs, const AP_Vehicle::FixedWing &parms)
+	EPR2_AltController(AP_AHRS &ahrs, const AP_Vehicle::FixedWing &parms)
         : aparm(parms)
         , _ahrs(ahrs)
     {
@@ -19,10 +20,10 @@ public:
     }
 
     /* Do not allow copies */
-	EPR2_PitchController(const EPR2_PitchController &other) = delete;
-	EPR2_PitchController &operator=(const EPR2_PitchController&) = delete;
+	EPR2_AltController(const EPR2_AltController &other) = delete;
+	EPR2_AltController &operator=(const EPR2_AltController&) = delete;
 
-	int32_t get_servo_out(float desired_angle);
+	float get_desired_pitch(void);
 
 	void reset_I();
 
@@ -38,12 +39,14 @@ private:
 	AP_Float        _kd;
 	AP_Int16        _imax;
 	AP_Int16		_scaler;
+	AP_Float		_target;
 
 	uint32_t _last_t;
 	float _last_out;
 	float _integrator;///< integrator value
 	float _last_error;///< last error for derivative
 	float _last_derivative;///< last derivative for low-pass filter
+	float _height;/// current height estimate (above field elevation)
 
     AP_Logger::PID_Info _pid_info;
 
