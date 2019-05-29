@@ -104,7 +104,8 @@ void Plane::stabilize_roll(float speed_scaler)
  */
 void Plane::stabilize_pitch(float speed_scaler)
 {
-    int8_t force_elevator = takeoff_tail_hold();
+    /*
+	int8_t force_elevator = takeoff_tail_hold();
     if (force_elevator != 0) {
         // we are holding the tail down during takeoff. Just convert
         // from a percentage to a -4500..4500 centidegree angle
@@ -116,6 +117,7 @@ void Plane::stabilize_pitch(float speed_scaler)
     if (control_mode == &mode_stabilize && channel_pitch->get_control_in() != 0) {
         disable_integrator = true;
     }
+    */
     SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, epr2PitchController.get_servo_out(epr2AltController.get_desired_pitch()));
 }
 
