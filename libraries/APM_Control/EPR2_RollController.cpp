@@ -160,7 +160,7 @@ int32_t EPR2_RollController::get_servo_out(void)
     _pid_info.I = constrain_float(_pid_info.I, -intLimScaled, intLimScaled);
 	
 	// Save desired and achieved angles
-    _pid_info.desired = desired_angle;
+    _pid_info.desired = _target;
     _pid_info.actual = achieved_angle;
 
     // Calculate the demanded control surface deflection (degrees) with the scaler
