@@ -342,9 +342,9 @@ public:
         k_param_mixing_offset,
         k_param_dspoiler_rud_rate,
 
-		k_param_EPR2rollController,
-		k_param_EPR2pitchController,
-		k_param_EPR2altController,
+		k_param_epr2RollController,
+		k_param_epr2PitchController,
+		k_param_epr2AltController,
 
         k_param_logger = 253, // Logging Group
 
