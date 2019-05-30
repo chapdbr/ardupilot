@@ -19,6 +19,8 @@
 #include <AP_HAL/AP_HAL.h>
 #include "EPR2_ThrottleController.h"
 
+#include "Plane.h"
+
 extern const AP_HAL::HAL& hal;
 
 const AP_Param::GroupInfo EPR2_ThrottleController::var_info[] = {
