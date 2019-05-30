@@ -6,6 +6,7 @@
 #include "AP_AutoTune.h"
 #include <AP_Logger/AP_Logger.h>
 #include <AP_Math/AP_Math.h>
+#include <AP_Airspeed/AP_Airspeed.h>
 
 class EPR2_ThrottleController {
 public:
@@ -50,6 +51,7 @@ private:
     AP_Logger::PID_Info _pid_info;
 
 	AP_AHRS &_ahrs;
+	AP_Airspeed &_airspeed;
 
 	/// Low pass filter cut frequency for derivative calculation.
 	///
