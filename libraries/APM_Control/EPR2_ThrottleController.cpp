@@ -90,7 +90,15 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
 	_last_t = tnow;
 	float delta_time    = (float)dt * 0.001f;
     // Get airspeed (m/s)
-	float aspd = _ahrs.get_EAS2TAS();
+	//_ahrs.airspeed_estimate(&aspd);
+    if (plane.airspeed.enabled() && plane.airspeed.healthy()) {
+        aspd = plane.airspeed.get_airspeed();
+    }
+    // airspeed estimates are OK:
+    else {
+    	_ahrs.airspeed_estimate(&aspd);
+    }
+
 	// Calculate the aspd error
 	float aspd_error = (_target - aspd);
 	
