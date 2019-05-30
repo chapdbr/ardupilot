@@ -63,13 +63,13 @@ const AP_Param::GroupInfo EPR2_ThrottleController::var_info[] = {
 	AP_GROUPINFO("SCALER",      4, EPR2_ThrottleController, _scaler,        45),
 
 	// @Param: TARGET
-	// @DisplayName: Roll target
-	// @Description: Roll target.
-	// @Units: deg
-	// @Range: -10 10
+	// @DisplayName: Speed target
+	// @Description: Speed target.
+	// @Units: m/s
+	// @Range: 10 30
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("TARGET",      5, EPR2_ThrottleController, _target,        0),
+	AP_GROUPINFO("TARGET",      5, EPR2_ThrottleController, _target,       15),
 
 	AP_GROUPEND
 };
@@ -89,20 +89,13 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
 	}
 	_last_t = tnow;
 	float delta_time    = (float)dt * 0.001f;
-    // Get body angle .roll_sensor (centi-degrees) ou .roll (radians)
-	float achieved_angle = _ahrs.roll_sensor * 0.001f;
-	// Get body rate (degrees)
-	//float achieved_rate = _ahrs.get_gyro().x;
-	// Calculate the angle error (deg)
-	float angle_error = (_target - achieved_angle);
+    // Get airspeed (m/s)
+	float aspd = _ahrs.get_EAS2TAS();
+	// Calculate the aspd error
+	float aspd_error = (_target - aspd);
 	
-	// Get an airspeed estimate - default to zero if none available
-	float aspeed;
-	if (!_ahrs.airspeed_estimate(&aspeed)) {
-        aspeed = 0.0f;
-    }
 	// Compute proportional component
-	_pid_info.P = angle_error * _kp;
+	_pid_info.P = aspd_error * _kp;
 
 	// Compute derivative component if time has elapsed
 	if ((fabsf(_kd) > 0) && (dt > 0)) {
@@ -115,7 +108,7 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
 			derivative = 0;
 			_last_derivative = 0;
 		} else {
-			derivative = (angle_error - _last_error) / delta_time;
+			derivative = (aspd_error - _last_error) / delta_time;
 		}
 
 		// discrete low pass filter, cuts out the
@@ -126,7 +119,7 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
 					  (derivative - _last_derivative));
 
 		// update state
-		_last_error         = angle_error;
+		_last_error         = aspd_error;
 		_last_derivative    = derivative;
 
 		// add in derivative component
@@ -139,7 +132,7 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
 	if (_ki > 0) {
 		//only integrate if gain and time step are positive and airspeed above min value.
 		if (dt > 0 && aspeed > float(aparm.airspeed_min)) {
-		    float integrator_delta = angle_error * _ki * delta_time;
+		    float integrator_delta = aspd_error * _ki * delta_time;
 			// prevent the integrator from increasing if surface defln demand is above the upper limit
 			if (_last_out < -45) {
                 integrator_delta = MAX(integrator_delta , 0);
@@ -161,14 +154,14 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
 	
 	// Save desired and achieved angles
     _pid_info.desired = _target;
-    _pid_info.actual = achieved_angle;
+    _pid_info.actual = aspd;
 
     // Calculate the demanded control surface deflection (degrees) with the scaler
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
 	_last_out = _last_out * _scaler;
 	
-	// Convert to centi-degrees and constrain
-	return constrain_float(_last_out * 100, -4500, 4500);
+	// Convert to percentage and constrain (0-100)
+	return constrain_float(_last_out * 100, 0, 100);
 }
 
 void EPR2_ThrottleController::reset_I()

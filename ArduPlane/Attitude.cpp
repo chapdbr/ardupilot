@@ -422,14 +422,14 @@ void Plane::stabilize()
 
 void Plane::calc_throttle()
 {
-    if (aparm.throttle_cruise <= 1) {
+    /*
+	if (aparm.throttle_cruise <= 1) {
         // user has asked for zero throttle - this may be done by a
         // mission which wants to turn off the engine for a parachute
         // landing
         SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, 0);
         return;
     }
-
     int32_t commanded_throttle = SpdHgt_Controller->get_throttle_demand();
 
     // Received an external msg that guides throttle in the last 3 seconds?
@@ -438,8 +438,8 @@ void Plane::calc_throttle()
             millis() - plane.guided_state.last_forced_throttle_ms < 3000) {
         commanded_throttle = plane.guided_state.forced_throttle;
     }
-
-    SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, commanded_throttle);
+	*/
+    SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, epr2ThrottleController.get_servo_out());
 }
 
 /*****************************************
