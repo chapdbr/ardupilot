@@ -19,8 +19,6 @@
 #include <AP_HAL/AP_HAL.h>
 #include "EPR2_ThrottleController.h"
 
-#include <../Plane.h>
-
 extern const AP_HAL::HAL& hal;
 
 const AP_Param::GroupInfo EPR2_ThrottleController::var_info[] = {
@@ -92,17 +90,11 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
 	_last_t = tnow;
 	float delta_time    = (float)dt * 0.001f;
     // Get airspeed (m/s)
-	//_ahrs.airspeed_estimate(&aspd);
-    if (plane.airspeed.enabled() && plane.airspeed.healthy()) {
-        aspd = plane.airspeed.get_airspeed();
-    }
-    // airspeed estimates are OK:
-    else {
-    	_ahrs.airspeed_estimate(&aspd);
-    }
-
+	//_ahrs.airspeed_estimate(&_aspd);
+	_aspd = _ahrs.get_airspeed();
+	//_aspd = AP_Airspeed.get_airspeed();
 	// Calculate the aspd error
-	float aspd_error = (_target - aspd);
+	float aspd_error = (_target - _aspd);
 	
 	// Compute proportional component
 	_pid_info.P = aspd_error * _kp;

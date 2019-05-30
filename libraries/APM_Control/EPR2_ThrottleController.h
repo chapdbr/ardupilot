@@ -41,7 +41,7 @@ private:
 	AP_Float		_target;
 
 	uint32_t _last_t;
-	float aspd;
+	float _aspd;
 	float _last_out;
 	float _integrator;///< integrator value
 	float _last_error;///< last error for derivative
