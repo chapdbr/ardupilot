@@ -160,7 +160,7 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
 	
 	// Save desired and achieved angles
     _pid_info.desired = _target;
-    _pid_info.actual = aspd;
+    _pid_info.actual = aspeed;
 
     // Calculate the demanded control surface deflection (degrees) with the scaler
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
