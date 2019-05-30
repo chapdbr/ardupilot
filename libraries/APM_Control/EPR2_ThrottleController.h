@@ -10,9 +10,10 @@
 
 class EPR2_ThrottleController {
 public:
-	EPR2_ThrottleController(AP_AHRS &ahrs, const AP_Vehicle::FixedWing &parms)
+	EPR2_ThrottleController(AP_AHRS &ahrs, const AP_Vehicle::FixedWing &parms, AP_Airspeed &airspeed)
         : aparm(parms)
         , _ahrs(ahrs)
+		, _airspeed(airspeed)
     {
         AP_Param::setup_object_defaults(this, var_info);
         // set _last_derivative as invalid when we startup
