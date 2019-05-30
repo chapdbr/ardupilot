@@ -90,12 +90,15 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
 	}
 	_last_t = tnow;
 	float delta_time    = (float)dt * 0.001f;
-    // Get airspeed (m/s)
-	//_ahrs.airspeed_estimate(&_aspd);
-	_aspd = _airspeed.get_airspeed();
-	//_aspd = AP_Airspeed.get_airspeed();
+
+	// Get an airspeed estimate - default to zero if none available
+	float aspeed;
+	if (!_ahrs.airspeed_estimate(&aspeed)) {
+        aspeed = 0.0f;
+    }
+
 	// Calculate the aspd error
-	float aspd_error = (_target - _aspd);
+	float aspd_error = (_target - aspeed);
 	
 	// Compute proportional component
 	_pid_info.P = aspd_error * _kp;

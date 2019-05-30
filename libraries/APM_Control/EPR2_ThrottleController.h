@@ -6,14 +6,12 @@
 #include "AP_AutoTune.h"
 #include <AP_Logger/AP_Logger.h>
 #include <AP_Math/AP_Math.h>
-#include <AP_Airspeed/AP_Airspeed.h>
 
 class EPR2_ThrottleController {
 public:
-	EPR2_ThrottleController(AP_AHRS &ahrs, const AP_Vehicle::FixedWing &parms, AP_Airspeed &airspeed)
+	EPR2_ThrottleController(AP_AHRS &ahrs, const AP_Vehicle::FixedWing &parms)
         : aparm(parms)
         , _ahrs(ahrs)
-		, _airspeed(airspeed)
     {
         AP_Param::setup_object_defaults(this, var_info);
         // set _last_derivative as invalid when we startup
@@ -43,7 +41,6 @@ private:
 	AP_Float		_target;
 
 	uint32_t _last_t;
-	float _aspd;
 	float _last_out;
 	float _integrator;///< integrator value
 	float _last_error;///< last error for derivative
@@ -52,7 +49,6 @@ private:
     AP_Logger::PID_Info _pid_info;
 
 	AP_AHRS &_ahrs;
-	AP_Airspeed &_airspeed;
 
 	/// Low pass filter cut frequency for derivative calculation.
 	///
