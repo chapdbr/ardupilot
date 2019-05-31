@@ -55,14 +55,6 @@ const AP_Param::GroupInfo EPR2_ThrottleController::var_info[] = {
 	// @User: Advanced
 	AP_GROUPINFO("IMAX",      3, EPR2_ThrottleController, _imax,        3000),
 
-	// @Param: SCALER
-	// @DisplayName: Command scaler
-	// @Description: Scale the command to degrees according to the range of motion.
-	// @Range: 0 45
-	// @Increment: 1
-	// @User: Advanced
-	AP_GROUPINFO("SCALER",      4, EPR2_ThrottleController, _scaler,        45),
-
 	// @Param: TARGET
 	// @DisplayName: Speed target
 	// @Description: Speed target.
@@ -70,7 +62,7 @@ const AP_Param::GroupInfo EPR2_ThrottleController::var_info[] = {
 	// @Range: 10 30
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("TARGET",      5, EPR2_ThrottleController, _target,       15),
+	AP_GROUPINFO("TARGET",      4, EPR2_ThrottleController, _target,       15),
 
 	AP_GROUPEND
 };
@@ -162,9 +154,8 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
     _pid_info.desired = _target;
     _pid_info.actual = aspeed;
 
-    // Calculate the demanded control surface deflection (degrees) with the scaler
+    // Calculate the demanded control command (0-1)
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
-	_last_out = _last_out * _scaler;
 	
 	// Convert to percentage and constrain (0-100)
 	return constrain_float(_last_out * 100, 0, 100);
