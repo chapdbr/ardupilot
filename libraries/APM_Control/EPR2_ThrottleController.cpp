@@ -26,26 +26,26 @@ const AP_Param::GroupInfo EPR2_ThrottleController::var_info[] = {
 	// @Param: P
 	// @DisplayName: Proportional Gain
 	// @Description: Proportional gain from roll angle demands to ailerons. Higher values allow more servo response but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0 1
-	// @Increment: 0.001
+	// @Range: 0 4
+	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("P",        0, EPR2_ThrottleController, _kp,        1.0f),
+	AP_GROUPINFO("P",        0, EPR2_ThrottleController, _kp,        2.9506f),
 
 	// @Param: I
 	// @DisplayName: Integrator Gain
 	// @Description: Integrator gain from long-term roll angle offsets to ailerons. Higher values "trim" out offsets faster but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0 1
-	// @Increment: 0.001
+	// @Range: 0 2
+	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("I",        1, EPR2_ThrottleController, _ki,        0.3f),
+	AP_GROUPINFO("I",        1, EPR2_ThrottleController, _ki,        1.2622f),
 
 	// @Param: D
 	// @DisplayName: Damping Gain
 	// @Description: Damping gain from roll acceleration to ailerons. Higher values reduce rolling in turbulence, but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0 1
-	// @Increment: 0.001
+	// @Range: 0 0.01
+	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("D",        2, EPR2_ThrottleController, _kd,        0.08f),
+	AP_GROUPINFO("D",        2, EPR2_ThrottleController, _kd,        0.0033f),
 
 	// @Param: IMAX
 	// @DisplayName: Integrator limit
@@ -53,7 +53,7 @@ const AP_Param::GroupInfo EPR2_ThrottleController::var_info[] = {
 	// @Range: 0 4500
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("IMAX",      3, EPR2_ThrottleController, _imax,        3000),
+	AP_GROUPINFO("IMAX",      3, EPR2_ThrottleController, _imax,        100),
 
 	// @Param: TARGET
 	// @DisplayName: Speed target
@@ -63,6 +63,15 @@ const AP_Param::GroupInfo EPR2_ThrottleController::var_info[] = {
 	// @Increment: 1
 	// @User: Advanced
 	AP_GROUPINFO("TARGET",      4, EPR2_ThrottleController, _target,       15),
+
+	// @Param: MAX_THRUST
+	// @DisplayName: Maximum thrust
+	// @Description: Maximum thrust.
+	// @Units: %
+	// @Range: 0 1
+	// @Increment: 0.1
+	// @User: Advanced
+	AP_GROUPINFO("MAX_THRUST",      5, EPR2_ThrottleController, _max_thrust,        1),
 
 	AP_GROUPEND
 };
@@ -81,12 +90,13 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
 		dt = 0;
 	}
 	_last_t = tnow;
+	// Get time delta in s
 	float delta_time    = (float)dt * 0.001f;
 
-	// Get an airspeed estimate - default to zero if none available
+	// Get an airspeed estimate - default to 15 if none available
 	float aspeed;
 	if (!_ahrs.airspeed_estimate(&aspeed)) {
-        aspeed = 0.0f;
+        aspeed = 15.0f;
     }
 
 	// Calculate the aspd error
@@ -95,6 +105,10 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
 	// Compute proportional component
 	_pid_info.P = aspd_error * _kp;
 
+	if (isnan(_last_error)) {
+		// we've just done a reset, last_error = 0
+		_last_error = 0;
+	}
 	// Compute derivative component if time has elapsed
 	if ((fabsf(_kd) > 0) && (dt > 0)) {
 		float derivative;
@@ -104,24 +118,15 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
 			// term as we don't want a sudden change in input to cause
 			// a large D output change
 			derivative = 0;
-			_last_derivative = 0;
 		} else {
-			derivative = (aspd_error - _last_error) / delta_time;
+			float tau = 1/_fCut;
+			derivative = (2*tau-delta_time)/(2*tau+delta_time)*_last_derivative + 2/(2*tau+delta_time)*(aspd_error - _last_error);
 		}
-
-		// discrete low pass filter, cuts out the
-		// high frequency noise that can drive the controller crazy
-		float RC = 1/(2*M_PI*_fCut);
-		derivative = _last_derivative +
-					 ((delta_time / (RC + delta_time)) *
-					  (derivative - _last_derivative));
-
-		// update state
-		_last_error         = aspd_error;
-		_last_derivative    = derivative;
 
 		// add in derivative component
 		_pid_info.D = derivative * _kd;
+		// update last derivative
+		_last_derivative    = derivative;
 	}
 
 	// Multiply roll error by gains.I and integrate
@@ -130,11 +135,12 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
 	if (_ki > 0) {
 		//only integrate if gain and time step are positive and airspeed above min value.
 		if (dt > 0 && aspeed > float(aparm.airspeed_min)) {
-		    float integrator_delta = aspd_error * _ki * delta_time;
+			// Trapeziodal integration
+			float integrator_delta = (aspd_error + _last_error) * delta_time * 0.5 * _ki;
 			// prevent the integrator from increasing if surface defln demand is above the upper limit
-			if (_last_out < -45) {
+			if (_last_out < -_max_thrust) {
                 integrator_delta = MAX(integrator_delta , 0);
-            } else if (_last_out > 45) {
+            } else if (_last_out > _max_thrust) {
                 // prevent the integrator from decreasing if surface defln demand  is below the lower limit
                  integrator_delta = MIN(integrator_delta, 0);
             }
@@ -150,9 +156,10 @@ int32_t EPR2_ThrottleController::get_servo_out(void)
     // Constrain the integrator state
     _pid_info.I = constrain_float(_pid_info.I, -intLimScaled, intLimScaled);
 	
-	// Save desired and achieved angles
+	// Save desired, achieved angles and last error
     _pid_info.desired = _target;
     _pid_info.actual = aspeed;
+    _last_error = aspd_error;
 
     // Calculate the demanded control command (0-1)
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;

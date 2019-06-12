@@ -25,26 +25,26 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Param: P
 	// @DisplayName: Proportional Gain
 	// @Description: Proportional gain from roll angle demands to ailerons. Higher values allow more servo response but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0 1
-	// @Increment: 0.001
+	// @Range: 0 2
+	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("P",        0, EPR2_AltController, _kp,        1.000f),
+	AP_GROUPINFO("P",        0, EPR2_AltController, _kp,        0.9746f),
 
 	// @Param: I
 	// @DisplayName: Integrator Gain
 	// @Description: Integrator gain from long-term roll angle offsets to ailerons. Higher values "trim" out offsets faster but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0 1
-	// @Increment: 0.001
+	// @Range: 0 2
+	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("I",        1, EPR2_AltController, _ki,        0.300f),
+	AP_GROUPINFO("I",        1, EPR2_AltController, _ki,        0.7777f),
 
 	// @Param: D
 	// @DisplayName: Damping Gain
 	// @Description: Damping gain from roll acceleration to ailerons. Higher values reduce rolling in turbulence, but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0 1
-	// @Increment: 0.001
+	// @Range: 0 0.1
+	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("D",        2, EPR2_AltController, _kd,        0.080f),
+	AP_GROUPINFO("D",        2, EPR2_AltController, _kd,        0.0602f),
 
 	// @Param: IMAX
 	// @DisplayName: Integrator limit
@@ -60,7 +60,7 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Range: 0 45
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("SCALER",      4, EPR2_AltController, _scaler,        45),
+	AP_GROUPINFO("SCALER",      4, EPR2_AltController, _scaler,        30),
 
 	// @Param: TARGET
 	// @DisplayName: Altitude target
@@ -71,6 +71,14 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @User: Advanced
 	AP_GROUPINFO("TARGET",      5, EPR2_AltController, _target,        3),
 
+	// @Param: MAX_ANGLE
+	// @DisplayName: Maximum angle
+	// @Description: Maximum angle.
+	// @Units: deg
+	// @Range: 0 45
+	// @Increment: 1
+	// @User: Advanced
+	AP_GROUPINFO("MAX_ANGLE",      5, EPR2_AltController, _max_angle,        30),
 
 	AP_GROUPEND
 };
@@ -89,6 +97,7 @@ float EPR2_AltController::get_desired_pitch(void)
 		dt = 0;
 	}
 	_last_t = tnow;
+	// Get time delta in s
 	float delta_time    = (float)dt * 0.001f;
     // Get altitude
 	// return a Down position relative to home in meters
@@ -99,14 +108,17 @@ float EPR2_AltController::get_desired_pitch(void)
 	// Calculate the altitude error (m)
 	float alt_error = (_target - _height);
 	
-	// Get an airspeed estimate - default to zero if none available
+	// Get an airspeed estimate - default to 15 if none available
 	float aspeed;
 	if (!_ahrs.airspeed_estimate(&aspeed)) {
-        aspeed = 0.0f;
+        aspeed = 15.0f;
     }
 	// Compute proportional component
 	_pid_info.P = alt_error * _kp;
-
+	if (isnan(_last_error)) {
+		// we've just done a reset, last_error = 0
+		_last_error = 0;
+	}
 	// Compute derivative component if time has elapsed
 	if ((fabsf(_kd) > 0) && (dt > 0)) {
 		float derivative;
@@ -116,24 +128,15 @@ float EPR2_AltController::get_desired_pitch(void)
 			// term as we don't want a sudden change in input to cause
 			// a large D output change
 			derivative = 0;
-			_last_derivative = 0;
 		} else {
-			derivative = (alt_error - _last_error) / delta_time;
+			float tau = 1/_fCut;
+			derivative = (2*tau-delta_time)/(2*tau+delta_time)*_last_derivative + 2/(2*tau+delta_time)*(alt_error - _last_error);
 		}
-
-		// discrete low pass filter, cuts out the
-		// high frequency noise that can drive the controller crazy
-		float RC = 1/(2*M_PI*_fCut);
-		derivative = _last_derivative +
-					 ((delta_time / (RC + delta_time)) *
-					  (derivative - _last_derivative));
-
-		// update state
-		_last_error         = alt_error;
-		_last_derivative    = derivative;
 
 		// add in derivative component
 		_pid_info.D = derivative * _kd;
+		// update last derivative
+		_last_derivative    = derivative;
 	}
 
 	// Multiply roll error by gains.I and integrate
@@ -142,11 +145,13 @@ float EPR2_AltController::get_desired_pitch(void)
 	if (_ki > 0) {
 		//only integrate if gain and time step are positive and airspeed above min value.
 		if (dt > 0 && aspeed > float(aparm.airspeed_min)) {
-		    float integrator_delta = alt_error * _ki * delta_time;
+			// Trapeziodal integration
+		    float integrator_delta = (alt_error + _last_error) * delta_time * 0.5 * _ki;
+
 			// prevent the integrator from increasing if surface defln demand is above the upper limit
-			if (_last_out < -45) {
+			if (_last_out < -_max_angle) {
                 integrator_delta = MAX(integrator_delta , 0);
-            } else if (_last_out > 45) {
+            } else if (_last_out > _max_angle) {
                 // prevent the integrator from decreasing if surface defln demand  is below the lower limit
                  integrator_delta = MIN(integrator_delta, 0);
             }
@@ -155,23 +160,25 @@ float EPR2_AltController::get_desired_pitch(void)
 	} else {
 		_pid_info.I = 0;
 	}
-	
+
     // Scale the integration limit
     float intLimScaled = _imax * 0.01f;
 
     // Constrain the integrator state
     _pid_info.I = constrain_float(_pid_info.I, -intLimScaled, intLimScaled);
 	
-	// Save desired and achieved angles
-    _pid_info.desired = _target;
-    _pid_info.actual = _height;
+	// Save desired, achieved angles and update last error
+    _pid_info.desired  = _target;
+    _pid_info.actual   = _height;
+	_last_error        = alt_error;
+
 
     // Calculate the demanded control surface deflection (degrees) with the scaler
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
 	_last_out = _last_out * _scaler;
 	
 	// Convert to centi-degrees, constrain and call the pitch controller
-	return constrain_float(_last_out, -60, 60);
+	return constrain_float(_last_out, -_max_angle, _max_angle);
 }
 
 void EPR2_AltController::reset_I()
