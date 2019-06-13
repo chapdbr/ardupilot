@@ -6,7 +6,6 @@
 #include "AP_AutoTune.h"
 #include <AP_Logger/AP_Logger.h>
 #include <AP_Math/AP_Math.h>
-#include "EPR2_PitchController.h"
 
 class EPR2_AltController {
 public:
@@ -17,6 +16,7 @@ public:
         AP_Param::setup_object_defaults(this, var_info);
         // set _last_derivative as invalid when we startup
 		_last_derivative = NAN;
+		_last_error = NAN;
     }
 
     /* Do not allow copies */
