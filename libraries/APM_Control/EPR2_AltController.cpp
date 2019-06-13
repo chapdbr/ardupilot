@@ -78,7 +78,7 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Range: 0 45
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("MAX_ANGLE",      6, EPR2_AltController, _max_angle,        30),
+	AP_GROUPINFO("MAX",      6, EPR2_AltController, _max_angle,        30),
 
 	AP_GROUPEND
 };

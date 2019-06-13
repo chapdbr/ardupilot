@@ -69,7 +69,7 @@ const AP_Param::GroupInfo EPR2_PitchController::var_info[] = {
 	// @Range: 0 45
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("MAX_ANGLE",      5, EPR2_PitchController, _max_angle,        40),
+	AP_GROUPINFO("MAX",      5, EPR2_PitchController, _max_angle,        40),
 
 	AP_GROUPEND
 };

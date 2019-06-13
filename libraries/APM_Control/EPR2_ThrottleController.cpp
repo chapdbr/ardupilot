@@ -71,7 +71,7 @@ const AP_Param::GroupInfo EPR2_ThrottleController::var_info[] = {
 	// @Range: 0 1
 	// @Increment: 0.1
 	// @User: Advanced
-	AP_GROUPINFO("MAX_THRUST",      5, EPR2_ThrottleController, _max_thrust,        1.0f),
+	AP_GROUPINFO("MAX",      5, EPR2_ThrottleController, _max_thrust,        1.0f),
 
 	AP_GROUPEND
 };
