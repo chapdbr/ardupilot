@@ -38,8 +38,7 @@ private:
 	AP_Float        _ki;
 	AP_Float        _kd;
 	AP_Int16        _imax;
-	AP_Int16		_scaler;
-	AP_Float		_target;
+	AP_Int16		_target;
 	AP_Float		_max_thrust;
 
 	uint32_t _last_t;

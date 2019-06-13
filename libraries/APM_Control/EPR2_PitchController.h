@@ -39,7 +39,7 @@ private:
 	AP_Float        _kd;
 	AP_Int16        _imax;
 	AP_Int16		_scaler;
-	AP_Float		_max_angle;
+	AP_Int16		_max_angle;
 
 	uint32_t _last_t;
 	float _last_out;
