@@ -78,23 +78,28 @@ bool Plane::stick_mixing_enabled(void)
  */
 void Plane::stabilize_roll(float speed_scaler)
 {
-    /*
-	if (fly_inverted()) {
-        // we want to fly upside down. We need to cope with wrap of
-        // the roll_sensor interfering with wrap of nav_roll, which
-        // would really confuse the PID code. The easiest way to
-        // handle this is to ensure both go in the same direction from
-        // zero
-        nav_roll_cd += 18000;
-        if (ahrs.roll_sensor < 0) nav_roll_cd -= 36000;
-    }
+	float servo_output;
+	if (control_mode == &mode_fbwb){
+	    	servo_output = epr2RollController.get_servo_out();
+	}
+	else{
+		if (fly_inverted()) {
+	        // we want to fly upside down. We need to cope with wrap of
+	        // the roll_sensor interfering with wrap of nav_roll, which
+	        // would really confuse the PID code. The easiest way to
+	        // handle this is to ensure both go in the same direction from
+	        // zero
+	        nav_roll_cd += 18000;
+	        if (ahrs.roll_sensor < 0) nav_roll_cd -= 36000;
+	    }
 
-    bool disable_integrator = false;
-    if (control_mode == &mode_stabilize && channel_roll->get_control_in() != 0) {
-        disable_integrator = true;
-    }
-    */
-    SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, epr2RollController.get_servo_out());
+	    bool disable_integrator = false;
+	    if (control_mode == &mode_stabilize && channel_roll->get_control_in() != 0) {
+	        disable_integrator = true;
+	    }
+	    servo_output = rollController.get_servo_out(nav_roll_cd - ahrs.roll_sensor,speed_scaler,disable_integrator);
+	}
+    SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, servo_output);
 }
 
 /*
@@ -104,21 +109,26 @@ void Plane::stabilize_roll(float speed_scaler)
  */
 void Plane::stabilize_pitch(float speed_scaler)
 {
-    /*
-	int8_t force_elevator = takeoff_tail_hold();
-    if (force_elevator != 0) {
-        // we are holding the tail down during takeoff. Just convert
-        // from a percentage to a -4500..4500 centidegree angle
-        SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, 45*force_elevator);
-        return;
+    float servo_output;
+	if (control_mode == &mode_fbwb){
+    	servo_output = epr2PitchController.get_servo_out(epr2AltController.get_desired_pitch());
     }
-    int32_t demanded_pitch = nav_pitch_cd + g.pitch_trim_cd + SRV_Channels::get_output_scaled(SRV_Channel::k_throttle) * g.kff_throttle_to_pitch;
-    bool disable_integrator = false;
-    if (control_mode == &mode_stabilize && channel_pitch->get_control_in() != 0) {
-        disable_integrator = true;
-    }
-    */
-    SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, epr2PitchController.get_servo_out(epr2AltController.get_desired_pitch()));
+	else{
+		int8_t force_elevator = takeoff_tail_hold();
+	    if (force_elevator != 0) {
+	        // we are holding the tail down during takeoff. Just convert
+	        // from a percentage to a -4500..4500 centidegree angle
+	        SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, 45*force_elevator);
+	        return;
+	    }
+	    int32_t demanded_pitch = nav_pitch_cd + g.pitch_trim_cd + SRV_Channels::get_output_scaled(SRV_Channel::k_throttle) * g.kff_throttle_to_pitch;
+	    bool disable_integrator = false;
+	    if (control_mode == &mode_stabilize && channel_pitch->get_control_in() != 0) {
+	        disable_integrator = true;
+	    }
+	    servo_output = pitchController.get_servo_out(demanded_pitch - ahrs.pitch_sensor,speed_scaler,disable_integrator);
+	}
+    SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, servo_output);
 }
 
 /*
@@ -399,7 +409,6 @@ void Plane::stabilize()
     /*
       see if we should zero the attitude controller integrators. 
      */
-    /*
     if (get_throttle_input() == 0 &&
         fabsf(relative_altitude) < 5.0f && 
         fabsf(barometer.get_climb_rate()) < 0.5f &&
@@ -416,7 +425,6 @@ void Plane::stabilize()
             steerController.reset_I();            
         }
     }
-    */
 }
 
 
@@ -472,7 +480,9 @@ void Plane::calc_nav_yaw_coordinated(float speed_scaler)
         commanded_rudder += SRV_Channels::get_output_scaled(SRV_Channel::k_aileron) * g.kff_rudder_mix;
         commanded_rudder += rudder_in;
     }
-
+    if (control_mode == &mode_fbwb){
+    	commanded_rudder = 0;
+    }
     steering_control.rudder = constrain_int16(commanded_rudder, -4500, 4500);
 }
 
