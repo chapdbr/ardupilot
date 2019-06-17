@@ -104,7 +104,7 @@ int32_t EPR2_RollController::get_servo_out(void)
 	// Get body rate (degrees)
 	//float achieved_rate = _ahrs.get_gyro().x;
 	// Calculate the angle error (deg)
-	float angle_error = (achieved_angle - _target);
+	float angle_error = (_target - achieved_angle);
 	
 	// Get an airspeed estimate - default to zero if 15 available
 	float aspeed;

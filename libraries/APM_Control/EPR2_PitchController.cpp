@@ -95,7 +95,7 @@ int32_t EPR2_PitchController::get_servo_out(float desired_angle)
 	// Get body rate (degrees)
 	//float achieved_rate = _ahrs.get_gyro().y;
 	// Calculate the angle error (deg)
-	float angle_error = (achieved_angle - desired_angle);
+	float angle_error = (desired_angle - achieved_angle);
 	
 	// Get an airspeed estimate - default to 15 if none available
 	float aspeed;
