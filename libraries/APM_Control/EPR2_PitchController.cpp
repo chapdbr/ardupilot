@@ -28,7 +28,7 @@ const AP_Param::GroupInfo EPR2_PitchController::var_info[] = {
 	// @Range: 0 1
 	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("P",        0, EPR2_PitchController, _kp,        0.0550f),
+	AP_GROUPINFO("P",        0, EPR2_PitchController, _kp,        0.4726f),
 
 	// @Param: I
 	// @DisplayName: Integrator Gain
@@ -36,7 +36,7 @@ const AP_Param::GroupInfo EPR2_PitchController::var_info[] = {
 	// @Range: 0 1
 	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("I",        1, EPR2_PitchController, _ki,        0.8552f),
+	AP_GROUPINFO("I",        1, EPR2_PitchController, _ki,        0.0020f),
 
 	// @Param: D
 	// @DisplayName: Damping Gain
@@ -44,7 +44,7 @@ const AP_Param::GroupInfo EPR2_PitchController::var_info[] = {
 	// @Range: 0 1
 	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("D",        2, EPR2_PitchController, _kd,        0.0015f),
+	AP_GROUPINFO("D",        2, EPR2_PitchController, _kd,        0.0627f),
 
 	// @Param: IMAX
 	// @DisplayName: Integrator limit

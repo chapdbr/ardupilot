@@ -25,10 +25,10 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Param: P
 	// @DisplayName: Proportional Gain
 	// @Description: Proportional gain from roll angle demands to ailerons. Higher values allow more servo response but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0 2
+	// @Range: 0 4
 	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("P",        0, EPR2_AltController, _kp,        0.9746f),
+	AP_GROUPINFO("P",        0, EPR2_AltController, _kp,        2.9972f),
 
 	// @Param: I
 	// @DisplayName: Integrator Gain
@@ -36,7 +36,7 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Range: 0 2
 	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("I",        1, EPR2_AltController, _ki,        0.7777f),
+	AP_GROUPINFO("I",        1, EPR2_AltController, _ki,        0.0f),
 
 	// @Param: D
 	// @DisplayName: Damping Gain
@@ -44,7 +44,7 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Range: 0 0.1
 	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("D",        2, EPR2_AltController, _kd,        0.0602f),
+	AP_GROUPINFO("D",        2, EPR2_AltController, _kd,        0.0f),
 
 	// @Param: IMAX
 	// @DisplayName: Integrator limit
@@ -52,7 +52,7 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Range: 0 4500
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("IMAX",      3, EPR2_AltController, _imax,        3000),
+	AP_GROUPINFO("IMAX",      3, EPR2_AltController, _imax,        2000),
 
 	// @Param: SCALER
 	// @DisplayName: Command scaler
@@ -60,7 +60,7 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Range: 0 45
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("SCALER",      4, EPR2_AltController, _scaler,        30),
+	AP_GROUPINFO("SCALER",      4, EPR2_AltController, _scaler,        20),
 
 	// @Param: TARGET
 	// @DisplayName: Altitude target
@@ -69,7 +69,7 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Range: 0 100
 	// @Increment: 0.5
 	// @User: Advanced
-	AP_GROUPINFO("TARGET",      5, EPR2_AltController, _target,        3.0f),
+	AP_GROUPINFO("TARGET",      5, EPR2_AltController, _target,        4.0f),
 
 	// @Param: MAX_ANGLE
 	// @DisplayName: Maximum angle
@@ -78,7 +78,7 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Range: 0 45
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("MAX",      6, EPR2_AltController, _max_angle,        30),
+	AP_GROUPINFO("MAX",      6, EPR2_AltController, _max_angle,        20),
 
 	AP_GROUPEND
 };
