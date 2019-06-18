@@ -4,7 +4,7 @@
 bool ModeFBWB::_enter()
 {
     plane.throttle_allows_nudging = false;
-    plane.auto_throttle_mode = true;
+    plane.auto_throttle_mode = false;
     plane.auto_navigation_mode = false;
 
 #if SOARING_ENABLED == ENABLED
