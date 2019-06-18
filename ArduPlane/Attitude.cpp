@@ -111,7 +111,8 @@ void Plane::stabilize_pitch(float speed_scaler)
 {
     float servo_output;
 	if (control_mode == &mode_fbwb){
-    	servo_output = epr2PitchController.get_servo_out(epr2AltController.get_desired_pitch());
+    	//servo_output = epr2PitchController.get_servo_out(epr2AltController.get_desired_pitch());
+		servo_output = epr2PitchController.get_servo_out(0);
     }
 	else{
 		int8_t force_elevator = takeoff_tail_hold();

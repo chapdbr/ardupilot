@@ -91,7 +91,7 @@ int32_t EPR2_PitchController::get_servo_out(float desired_angle)
 	// Get time delta in s
 	float delta_time    = (float)dt * 0.001f;
     // Get body angle .roll_sensor (centi-degrees) and convert to degrees
-	float achieved_angle = _ahrs.pitch_sensor * 0.001f;
+	float achieved_angle = degrees(_ahrs.pitch);
 	// Get body rate (degrees)
 	//float achieved_rate = _ahrs.get_gyro().y;
 	// Calculate the angle error (deg)
