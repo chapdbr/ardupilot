@@ -114,8 +114,8 @@ void Plane::stabilize_pitch(float speed_scaler)
     float servo_output;
 	if (control_mode == &mode_fbwb){
 		//bool disable_integrator = false;
-		//int32_t demanded_pitch = 0;
-		int32_t demanded_pitch = epr2AltController.get_desired_pitch();
+		int32_t demanded_pitch = 0;
+		//int32_t demanded_pitch = epr2AltController.get_desired_pitch();
 		servo_output = epr2PitchController.get_servo_out(demanded_pitch);
 		//servo_output = pitchController.get_servo_out(demanded_pitch - ahrs.pitch_sensor,speed_scaler,disable_integrator);
     }
