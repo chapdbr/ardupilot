@@ -25,10 +25,10 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Param: P
 	// @DisplayName: Proportional Gain
 	// @Description: Proportional gain from roll angle demands to ailerons. Higher values allow more servo response but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0 4
+	// @Range: 0 20
 	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("P",        0, EPR2_AltController, _kp,        2.9972f),
+	AP_GROUPINFO("P",        0, EPR2_AltController, _kp,        14.1582f),
 
 	// @Param: I
 	// @DisplayName: Integrator Gain
@@ -36,15 +36,15 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Range: 0 2
 	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("I",        1, EPR2_AltController, _ki,        0.0f),
+	AP_GROUPINFO("I",        1, EPR2_AltController, _ki,        1.0707f),
 
 	// @Param: D
 	// @DisplayName: Damping Gain
 	// @Description: Damping gain from roll acceleration to ailerons. Higher values reduce rolling in turbulence, but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0 0.1
+	// @Range: 0 2
 	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("D",        2, EPR2_AltController, _kd,        0.0f),
+	AP_GROUPINFO("D",        2, EPR2_AltController, _kd,        1.7248f),
 
 	// @Param: IMAX
 	// @DisplayName: Integrator limit
@@ -52,7 +52,7 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Range: 0 4500
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("IMAX",      3, EPR2_AltController, _imax,        2000),
+	AP_GROUPINFO("IMAX",      3, EPR2_AltController, _imax,        1000),
 
 	// @Param: SCALER
 	// @DisplayName: Command scaler
@@ -175,7 +175,7 @@ float EPR2_AltController::get_desired_pitch(void)
 
     // Calculate the demanded control surface deflection (degrees) with the scaler
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
-	_last_out = _last_out * _scaler;
+	//_last_out = _last_out * _scaler;
 	
 	// Convert to centi-degrees, constrain and call the pitch controller
 	return constrain_float(_last_out*100, -_max_angle*100, _max_angle*100);

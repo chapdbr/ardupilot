@@ -52,6 +52,6 @@ private:
 	AP_AHRS &_ahrs;
 
 	/// Low pass filter cut frequency for derivative calculation in Hz.
-	static const uint8_t        _fCut = 40;
+	static const uint8_t        _fCut = 20;
 
 };

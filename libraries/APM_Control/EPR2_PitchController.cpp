@@ -25,10 +25,10 @@ const AP_Param::GroupInfo EPR2_PitchController::var_info[] = {
 	// @Param: P
 	// @DisplayName: Proportional Gain
 	// @Description: Proportional gain from roll angle demands to ailerons. Higher values allow more servo response but can cause oscillations. Automatically set and adjusted by AUTOTUNE mode.
-	// @Range: 0 1
+	// @Range: 0 2
 	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("P",        0, EPR2_PitchController, _kp,        0.4726f),
+	AP_GROUPINFO("P",        0, EPR2_PitchController, _kp,        1.8006f),
 
 	// @Param: I
 	// @DisplayName: Integrator Gain
@@ -36,7 +36,7 @@ const AP_Param::GroupInfo EPR2_PitchController::var_info[] = {
 	// @Range: 0 1
 	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("I",        1, EPR2_PitchController, _ki,        0.0020f),
+	AP_GROUPINFO("I",        1, EPR2_PitchController, _ki,        0.6791f),
 
 	// @Param: D
 	// @DisplayName: Damping Gain
@@ -44,7 +44,7 @@ const AP_Param::GroupInfo EPR2_PitchController::var_info[] = {
 	// @Range: 0 1
 	// @Increment: 0.0001
 	// @User: User
-	AP_GROUPINFO("D",        2, EPR2_PitchController, _kd,        0.0627f),
+	AP_GROUPINFO("D",        2, EPR2_PitchController, _kd,        0.0457f),
 
 	// @Param: IMAX
 	// @DisplayName: Integrator limit
@@ -52,7 +52,7 @@ const AP_Param::GroupInfo EPR2_PitchController::var_info[] = {
 	// @Range: 0 4500
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("IMAX",      3, EPR2_PitchController, _imax,        4000),
+	AP_GROUPINFO("IMAX",      3, EPR2_PitchController, _imax,        3000),
 
 	// @Param: SCALER
 	// @DisplayName: Command scaler
@@ -69,7 +69,7 @@ const AP_Param::GroupInfo EPR2_PitchController::var_info[] = {
 	// @Range: 0 45
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("MAX",      5, EPR2_PitchController, _max_angle,        40),
+	AP_GROUPINFO("MAX",      5, EPR2_PitchController, _max_angle,        45),
 
 	AP_GROUPEND
 };
@@ -163,7 +163,7 @@ int32_t EPR2_PitchController::get_servo_out(float desired_angle)
 
     // Calculate the demanded control surface deflection (degrees) with the scaler
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
-	_last_out = _last_out * _scaler;
+	//_last_out = _last_out * _scaler;
 	
 	// Convert to centi-degrees and constrain
 	return constrain_float(_last_out * 100, -_max_angle*100, _max_angle*100);
