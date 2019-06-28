@@ -27,7 +27,7 @@ public:
 
 	// demanded pitch angle in centi-degrees
 	// should return between -9000 to +9000
-	int32_t get_pitch_demand(void) override {
+	int32_t get_pitch_demand(void){
 		return int32_t(_pitch_dem);
 	}
 
