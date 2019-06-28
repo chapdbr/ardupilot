@@ -192,6 +192,7 @@ void Plane::update_speed_height(void)
         quadplane.in_assisted_flight()) {
         quadplane.update_throttle_thr_mix();
     }
+    epr2AltController.calc_desired_pitch();
 }
 
 

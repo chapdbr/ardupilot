@@ -23,7 +23,13 @@ public:
 	EPR2_AltController(const EPR2_AltController &other) = delete;
 	EPR2_AltController &operator=(const EPR2_AltController&) = delete;
 
-	float get_desired_pitch(void);
+	void calc_desired_pitch(void);
+
+	// demanded pitch angle in centi-degrees
+	// should return between -9000 to +9000
+	int32_t get_pitch_demand(void) override {
+		return int32_t(_pitch_dem);
+	}
 
 	void reset_I();
 
@@ -41,6 +47,7 @@ private:
 	AP_Int16		_scaler;
 	AP_Float		_target;
 	AP_Int16		_max_angle;
+	AP_Int32		_pitch_dem;
 
 	uint32_t _last_t;
 	float _last_out;

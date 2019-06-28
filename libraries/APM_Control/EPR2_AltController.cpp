@@ -87,7 +87,7 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 /*
   internal bank angle controller, called by stabilize
 */
-float EPR2_AltController::get_desired_pitch(void)
+void EPR2_AltController::calc_desired_pitch(void)
 {
 
 	// Calculate delta time
@@ -176,9 +176,7 @@ float EPR2_AltController::get_desired_pitch(void)
     // Calculate the demanded control surface deflection (degrees) with the scaler
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
 	//_last_out = _last_out * _scaler;
-	
-	// Convert to centi-degrees, constrain and call the pitch controller
-	return constrain_float(_last_out*100, -_max_angle*100, _max_angle*100);
+	_pitch_dem = constrain_float(_last_out*100, -_max_angle*100, _max_angle*100);
 }
 
 void EPR2_AltController::reset_I()
