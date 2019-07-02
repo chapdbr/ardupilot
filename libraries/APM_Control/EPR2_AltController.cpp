@@ -176,7 +176,7 @@ void EPR2_AltController::calc_desired_pitch(void)
     // Calculate the demanded control surface deflection (degrees) with the scaler
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
 	//_last_out = _last_out * _scaler;
-	_pitch_dem = constrain_float(_last_out*100, -_max_angle*100, _max_angle*100);
+	_pitch_dem = constrain_float(_last_out, -_max_angle, _max_angle);
 }
 
 void EPR2_AltController::reset_I()
