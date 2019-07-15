@@ -78,7 +78,7 @@ const AP_Param::GroupInfo EPR2_ThrottleController::var_info[] = {
 
 
 /*
-  internal bank angle controller, called by stabilize
+  internal airspeed controller, called by stabilize
 */
 int32_t EPR2_ThrottleController::get_servo_out(void)
 {
