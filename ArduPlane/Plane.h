@@ -250,7 +250,7 @@ private:
     EPR2_RollController epr2RollController{ahrs, aparm};
     EPR2_PitchController epr2PitchController{ahrs, aparm};
     EPR2_AltController epr2AltController{ahrs, aparm};
-    EPR2_ThrottleController epr2ThrottleController{ahrs, aparm};
+    EPR2_Throttle epr2Throttle{ahrs, aparm};
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     SITL::SITL sitl;
