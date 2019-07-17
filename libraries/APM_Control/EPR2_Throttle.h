@@ -31,6 +31,8 @@ public:
 
 	void reset_I();
 
+	void ini();
+
 	void update_speed_target();
 
     const       AP_Logger::PID_Info& get_pid_info(void) const { return _pid_info; }
@@ -55,6 +57,8 @@ private:
 	AP_Float		_last_azimuth;
 	AP_Float		_azimuth_sum;
 	AP_Float		_speed_target;
+	AP_Float		_tini;
+	AP_Float		_azimuth_ini;
 
 	uint32_t _last_t;
 	float _last_out;

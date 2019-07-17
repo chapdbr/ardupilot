@@ -226,12 +226,13 @@ void EPR2_Throttle::update_speed_target()
 	// Calculate delta time
 	uint32_t tnow = AP_HAL::millis();
 	tnow = (float)tnow * 0.001f;
+	float telapsed = tnow - _tini;
 	float r_alt = _radius*sinf(acosf(_epr2alt._target/_radius));
 
 	float c_alt = 2*M_PI*r_alt;
 	float t_trim = c_alt/_grndspd;
 	float omega_trim = 2*M_PI/t_trim;
-	float azimuth_target = (tnow)*omega_trim;
+	float azimuth_target = (telapsed)*omega_trim+_azimuth_ini;
 
 	// ADD LOCATION from home position
 	// CALL update_speed_target from update spd_hgt
@@ -250,4 +251,14 @@ void EPR2_Throttle::update_speed_target()
 
 	float speed_target = distance_error/_tau+_grndspd;
 	_speed_target = constrain_float(speed_target,12,24);
+}
+
+void EPR2_Throttle::ini()
+{
+	// Initialize function
+	uint32_t tnow = AP_HAL::millis();
+	tnow = (float)tnow * 0.001f;
+	_tini = tnow;
+	// loc
+	_azimuth_ini = -atan2f(pE,pN);
 }

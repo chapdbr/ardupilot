@@ -13,6 +13,7 @@ bool ModeFBWB::_enter()
 #endif
 
     plane.set_target_altitude_current();
+    plane.epr2Throttle.ini();
 
     return true;
 }
