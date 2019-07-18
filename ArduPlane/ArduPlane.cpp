@@ -36,6 +36,7 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
     SCHED_TASK(read_radio,             50,    100),
     SCHED_TASK(check_short_failsafe,   50,    100),
     SCHED_TASK(update_speed_height,    50,    200),
+	SCHED_TASK(epr2Throttle.update_speed_target,    10,    100),
     SCHED_TASK(update_control_mode,   400,    100),
     SCHED_TASK(stabilize,             400,    100),
     SCHED_TASK(set_servos,            400,    100),

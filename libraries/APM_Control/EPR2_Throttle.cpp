@@ -223,21 +223,24 @@ void EPR2_Throttle::reset_I()
 
 void EPR2_Throttle::update_speed_target()
 {
+	// CALL update_speed_target from update spd_hgt
 	// Calculate delta time
 	uint32_t tnow = AP_HAL::millis();
 	tnow = (float)tnow * 0.001f;
 	float telapsed = tnow - _tini;
 	float r_alt = _radius*sinf(acosf(_epr2alt._target/_radius));
-
 	float c_alt = 2*M_PI*r_alt;
 	float t_trim = c_alt/_grndspd;
 	float omega_trim = 2*M_PI/t_trim;
 	float azimuth_target = (telapsed)*omega_trim+_azimuth_ini;
 
-	// ADD LOCATION from home position
-	// CALL update_speed_target from update spd_hgt
-
-	float azimuth = -atan2f(pE,pN);
+	// Location from home position
+	Vector2f position;
+	if (!_ahrs.get_relative_position_NE_home(position)) {
+		// we have no idea where we are....
+		return;
+	}
+	float azimuth = -atan2f(position.x,position.y);
 	float delta_latitude;
 	if (azimuth < _last_azimuth) {
 	    delta_latitude = azimuth + 2*M_PI - _last_azimuth;
@@ -259,6 +262,11 @@ void EPR2_Throttle::ini()
 	uint32_t tnow = AP_HAL::millis();
 	tnow = (float)tnow * 0.001f;
 	_tini = tnow;
-	// loc
-	_azimuth_ini = -atan2f(pE,pN);
+	// get position as a 2D offset from ahrs home
+	Vector2f position;
+	if (!_ahrs.get_relative_position_NE_home(position)) {
+		// we have no idea where we are....
+		return;
+	}
+	_azimuth_ini = -atan2f(position.x,position.y);
 }
