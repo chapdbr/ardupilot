@@ -135,13 +135,13 @@ int32_t EPR2_Throttle::get_servo_out(void)
 	_last_t = tnow;
 	// Get time delta in s
 	float delta_time    = (float)dt * 0.001f;
-
+	float spd_error;
 	if (_use_tracking == 1) {
 		//Calculate groundspeed
 		Vector2f _groundspeed_vector = _ahrs.groundspeed_vector();
 		float grndspeed = _groundspeed_vector.length();
 		// Calculate the grndspd error
-		float spd_error = (_speed_target - grndspeed);
+		spd_error = (_speed_target - grndspeed);
 	} else {
 		// Get an airspeed estimate - default to 15 if none available
 		float aspeed;
@@ -149,7 +149,7 @@ int32_t EPR2_Throttle::get_servo_out(void)
 	        aspeed = 15.0f;
 	    }
 		// Calculate the aspd error
-		float spd_error = (_aspd - aspeed);
+		spd_error = (_aspd - aspeed);
 	}
 	// Compute proportional component
 	_pid_info.P = spd_error * _kp;
