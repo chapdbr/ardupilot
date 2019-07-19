@@ -122,7 +122,7 @@ const AP_Param::GroupInfo EPR2_Throttle::var_info[] = {
 
 
 /*
-  internal airspeed controller, called by stabilize
+  internal azimuth controller, called by plane::calc_throttle()
 */
 int32_t EPR2_Throttle::get_servo_out(void)
 {
