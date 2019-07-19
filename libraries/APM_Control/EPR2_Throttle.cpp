@@ -225,15 +225,16 @@ void EPR2_Throttle::update_speed_target()
 {
 	uint32_t tnow = AP_HAL::millis();
 	tnow = (float)tnow * 0.001f;
-	if (tnow - _last_speed_update >= 0.1)
+	//if (tnow - _last_speed_update >= 0.1)
+	if (tnow - _last_speed_update >= 1) // low rate for debug
 	{
 		// we run this loop at 10 Hz
 		_last_speed_update = tnow;
 		// Calculate delta time
 		float telapsed = tnow - _tini;
 		// Calculate azimuth target
-		float target = _epr2alt.get_target();
-		float r_alt = _radius*sinf(acosf(target/_radius));
+		float alt_target = _epr2alt.get_target();
+		float r_alt = _radius*sinf(acosf(alt_target/_radius));
 		float c_alt = 2*M_PI*r_alt;
 		float t_trim = c_alt/_grndspd;
 		float omega_trim = 2*M_PI/t_trim;
@@ -259,6 +260,13 @@ void EPR2_Throttle::update_speed_target()
 
 		float speed_target = distance_error/_tau+_grndspd;
 		_speed_target = constrain_float(speed_target,12,24);
+
+		hal.console->printf("X=%f\t Y=%f\t az=%f\t az_sum=%f\t az_t=%f\n",
+			                            position.x,
+			                            position.y,
+			                            azimuth,
+										_azimuth_sum,
+										azimuth_target);
 	}
 }
 
@@ -275,9 +283,15 @@ void EPR2_Throttle::ini()
 		return;
 	}
 	_azimuth_ini = atan2f(position.y,position.x);
+
 	if (_azimuth_ini < 0) {
 		_azimuth_sum = -2*M_PI;
 	} else {
 		_azimuth_sum = 0;
 	}
+	hal.console->printf("Initialisation values: X=%f\t Y=%f\t az=%f\t az_sum=%f\n",
+	                            position.x,
+	                            position.y,
+	                            _azimuth_ini,
+								_azimuth_sum);
 }
