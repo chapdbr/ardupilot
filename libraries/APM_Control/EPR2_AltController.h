@@ -37,7 +37,7 @@ public:
 
 	static const struct AP_Param::GroupInfo var_info[];
 
-	AP_Float &target(void) { return _target; }
+	AP_Float get_target(void) { return _target; }
 
 private:
     const AP_Vehicle::FixedWing &aparm;

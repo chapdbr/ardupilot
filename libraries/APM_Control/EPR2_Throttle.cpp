@@ -228,7 +228,8 @@ void EPR2_Throttle::update_speed_target()
 	uint32_t tnow = AP_HAL::millis();
 	tnow = (float)tnow * 0.001f;
 	float telapsed = tnow - _tini;
-	float r_alt = _radius*sinf(acosf(_epr2alt.target()/_radius));
+	float target = _epr2alt.get_target();
+	float r_alt = _radius*sinf(acosf(target/_radius));
 	float c_alt = 2*M_PI*r_alt;
 	float t_trim = c_alt/_grndspd;
 	float omega_trim = 2*M_PI/t_trim;
