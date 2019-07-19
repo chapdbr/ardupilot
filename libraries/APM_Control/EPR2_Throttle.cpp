@@ -18,6 +18,7 @@
 
 #include <AP_HAL/AP_HAL.h>
 #include "EPR2_Throttle.h"
+#include <GCS_MAVLink/GCS.h>
 
 
 extern const AP_HAL::HAL& hal;
@@ -261,12 +262,20 @@ void EPR2_Throttle::update_speed_target()
 		float speed_target = distance_error/_tau+_grndspd;
 		_speed_target = constrain_float(speed_target,12,24);
 
+		/*
 		hal.console->printf("X=%f\t Y=%f\t az=%f\t az_sum=%f\t az_t=%f\n",
 			                            position.x,
 			                            position.y,
 			                            azimuth,
 										(float)_azimuth_sum,
 										azimuth_target);
+		*/
+		gcs().send_text(MAV_SEVERITY_CRITICAL, "X=%3.2f\t Y=%3.2f\t az=%3.2f\t az_sum=%3.2f\t az_t=%3.2f\n",
+                position.x,
+                position.y,
+                azimuth,
+				(float)_azimuth_sum,
+				azimuth_target);
 	}
 }
 
@@ -289,9 +298,16 @@ void EPR2_Throttle::ini()
 	} else {
 		_azimuth_sum = 0;
 	}
+	/*
 	hal.console->printf("Initialisation values: X=%f\t Y=%f\t az=%f\t az_sum=%f\n",
 	                            position.x,
 	                            position.y,
 	                            (float)_azimuth_ini,
 								(float)_azimuth_sum);
+	*/
+	gcs().send_text(MAV_SEVERITY_CRITICAL, "X=%3.2f\t Y=%3.2f\t az_ini=%3.2f\t az_sum=%3.2f\n",
+	                position.x,
+	                position.y,
+					(float)_azimuth_ini,
+					(float)_azimuth_sum);
 }
