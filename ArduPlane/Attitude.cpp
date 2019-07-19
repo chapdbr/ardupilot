@@ -453,7 +453,7 @@ void Plane::calc_throttle()
         commanded_throttle = plane.guided_state.forced_throttle;
     }
 	*/
-    SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, epr2ThrottleController.get_servo_out());
+    SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, epr2Throttle.get_servo_out());
 }
 
 /*****************************************

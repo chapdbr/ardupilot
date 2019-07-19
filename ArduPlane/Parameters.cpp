@@ -959,7 +959,7 @@ const AP_Param::Info Plane::var_info[] = {
 	GOBJECT(epr2AltController,         "EPR2ALT_",   EPR2_AltController),
 
 	// @Group: EPR2THR_
-	// @Path: ../libraries/APM_Control/EPR2_ThrottleController.cpp
+	// @Path: ../libraries/APM_Control/EPR2_Throttle.cpp
 	GOBJECT(epr2Throttle,         "EPR2T_",   EPR2_Throttle),
 
     // @Group: YAW2SRV_
