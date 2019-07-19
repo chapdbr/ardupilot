@@ -265,7 +265,7 @@ void EPR2_Throttle::update_speed_target()
 			                            position.x,
 			                            position.y,
 			                            azimuth,
-										_azimuth_sum,
+										(float)_azimuth_sum,
 										azimuth_target);
 	}
 }
@@ -292,6 +292,6 @@ void EPR2_Throttle::ini()
 	hal.console->printf("Initialisation values: X=%f\t Y=%f\t az=%f\t az_sum=%f\n",
 	                            position.x,
 	                            position.y,
-	                            _azimuth_ini,
-								_azimuth_sum);
+	                            (float)_azimuth_ini,
+								(float)_azimuth_sum);
 }
