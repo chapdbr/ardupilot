@@ -245,7 +245,7 @@ void EPR2_Throttle::update_speed_target()
 			// we have no idea where we are....
 			return;
 		}
-		float azimuth = atan2f(position.x,position.y);
+		float azimuth = atan2f(position.y,position.x);
 		float delta_latitude;
 		if (azimuth < _last_azimuth) {
 			delta_latitude = azimuth + 2*M_PI - _last_azimuth;
@@ -274,7 +274,7 @@ void EPR2_Throttle::ini()
 		// we have no idea where we are....
 		return;
 	}
-	_azimuth_ini = atan2f(position.x,position.y);
+	_azimuth_ini = atan2f(position.y,position.x);
 	if (_azimuth_ini < 0) {
 		_azimuth_sum = -2*M_PI;
 	} else {
