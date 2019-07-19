@@ -24,6 +24,7 @@ void ModeFBWB::update()
     plane.nav_roll_cd = plane.channel_roll->norm_input() * plane.roll_limit_cd;
     plane.update_load_factor();
     plane.update_fbwb_speed_height();
+    plane.epr2Throttle.update_speed_target();
 
 }
 

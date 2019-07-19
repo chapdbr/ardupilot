@@ -223,38 +223,43 @@ void EPR2_Throttle::reset_I()
 
 void EPR2_Throttle::update_speed_target()
 {
-	// CALL update_speed_target from update spd_hgt
-	// Calculate delta time
 	uint32_t tnow = AP_HAL::millis();
 	tnow = (float)tnow * 0.001f;
-	float telapsed = tnow - _tini;
-	float target = _epr2alt.get_target();
-	float r_alt = _radius*sinf(acosf(target/_radius));
-	float c_alt = 2*M_PI*r_alt;
-	float t_trim = c_alt/_grndspd;
-	float omega_trim = 2*M_PI/t_trim;
-	float azimuth_target = (telapsed)*omega_trim+_azimuth_ini;
+	if (tnow - _last_speed_update >= 0.1)
+	{
+		// we run this loop at 10 Hz
+		_last_speed_update = tnow;
+		// Calculate delta time
+		float telapsed = tnow - _tini;
+		// Calculate azimuth target
+		float target = _epr2alt.get_target();
+		float r_alt = _radius*sinf(acosf(target/_radius));
+		float c_alt = 2*M_PI*r_alt;
+		float t_trim = c_alt/_grndspd;
+		float omega_trim = 2*M_PI/t_trim;
+		float azimuth_target = (telapsed)*omega_trim+_azimuth_ini;
 
-	// Location from home position
-	Vector2f position;
-	if (!_ahrs.get_relative_position_NE_home(position)) {
-		// we have no idea where we are....
-		return;
-	}
-	float azimuth = -atan2f(position.x,position.y);
-	float delta_latitude;
-	if (azimuth < _last_azimuth) {
-	    delta_latitude = azimuth + 2*M_PI - _last_azimuth;
-	} else {
-	    delta_latitude = azimuth - _last_azimuth;
-	}
-	_last_azimuth = azimuth;
-	_azimuth_sum = _azimuth_sum+delta_latitude;
-	float latitude_error = azimuth_target-_azimuth_sum;
-	float distance_error = latitude_error*r_alt;
+		// Location from home position
+		Vector2f position;
+		if (!_ahrs.get_relative_position_NE_home(position)) {
+			// we have no idea where we are....
+			return;
+		}
+		float azimuth = atan2f(position.x,position.y);
+		float delta_latitude;
+		if (azimuth < _last_azimuth) {
+			delta_latitude = azimuth + 2*M_PI - _last_azimuth;
+		} else {
+			delta_latitude = azimuth - _last_azimuth;
+		}
+		_last_azimuth = azimuth;
+		_azimuth_sum = _azimuth_sum+delta_latitude;
+		float latitude_error = azimuth_target-_azimuth_sum;
+		float distance_error = latitude_error*r_alt;
 
-	float speed_target = distance_error/_tau+_grndspd;
-	_speed_target = constrain_float(speed_target,12,24);
+		float speed_target = distance_error/_tau+_grndspd;
+		_speed_target = constrain_float(speed_target,12,24);
+	}
 }
 
 void EPR2_Throttle::ini()
@@ -269,5 +274,10 @@ void EPR2_Throttle::ini()
 		// we have no idea where we are....
 		return;
 	}
-	_azimuth_ini = -atan2f(position.x,position.y);
+	_azimuth_ini = atan2f(position.x,position.y);
+	if (_azimuth_ini < 0) {
+		_azimuth_sum = -2*M_PI;
+	} else {
+		_azimuth_sum = 0;
+	}
 }
