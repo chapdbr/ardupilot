@@ -255,13 +255,15 @@ void EPR2_Throttle::update_speed_target()
 		float delta_azimuth = azimuth - _last_azimuth;
 		float central_angle = acosf(cosf(delta_azimuth));
 
+		/*
 		if (delta_azimuth < 0){
 			central_angle = 0; // bad data, aircraft shouldnt go backwards
 		} else {
 			_last_azimuth = azimuth;
 		}
-
+		*/
 		_azimuth_sum = _azimuth_sum+central_angle;
+		_last_azimuth = azimuth;
 		float azimuth_error = azimuth_target-_azimuth_sum;
 		float distance_error = azimuth_error*r_alt;
 
