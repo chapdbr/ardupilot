@@ -278,12 +278,13 @@ void EPR2_Throttle::update_speed_target()
 										(float)_azimuth_sum,
 										azimuth_target);
 		*/
-		gcs().send_text(MAV_SEVERITY_CRITICAL, "X=%3.2f\t Y=%3.2f\t az=%3.2f\t az_sum=%3.2f\t az_targ=%3.2f\n",
+		gcs().send_text(MAV_SEVERITY_CRITICAL, "X=%2.1f\t Y=%2.1f\t az=%2.1f\t az_s=%3.1f\t az_t=%3.1f\t er=%2.1f\n",
                 position.x,
                 position.y,
                 azimuth,
 				(float)_azimuth_sum,
-				azimuth_target);
+				azimuth_target,
+				distance_error);
 	}
 }
 
