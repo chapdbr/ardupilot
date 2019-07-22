@@ -213,6 +213,10 @@ int32_t EPR2_Throttle::get_servo_out(void)
 
 	// Calculate the demanded control command (0-1)
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
+	// Command max throttle if airspeed is below minimum airspeed
+	if (aspeed < float(aparm.airspeed_min)) {
+		_last_out = 1;
+	}
 	// Convert to percentage and constrain (0-100)
 	return constrain_float(_last_out * 100, 0, 100);
 }
@@ -239,7 +243,7 @@ void EPR2_Throttle::update_speed_target()
 		float c_alt = 2*M_PI*r_alt;
 		float t_trim = c_alt/_grndspd;
 		float omega_trim = 2*M_PI/t_trim;
-		float azimuth_target = (telapsed)*omega_trim+_azimuth_ini;
+		float azimuth_target = (telapsed)*omega_trim;
 
 		// Location from home position
 		Vector2f position;
@@ -248,19 +252,21 @@ void EPR2_Throttle::update_speed_target()
 			return;
 		}
 		float azimuth = atan2f(position.y,position.x);
-		float delta_latitude;
-		if (azimuth < _last_azimuth) {
-			delta_latitude = azimuth + 2*M_PI - _last_azimuth;
+		float delta_azimuth = azimuth - _last_azimuth;
+		float central_angle = acosf(cosf(delta_azimuth));
+
+		if (delta_azimuth < 0){
+			central_angle = 0; // bad data, aircraft shouldnt go backwards
 		} else {
-			delta_latitude = azimuth - _last_azimuth;
+			_last_azimuth = azimuth;
 		}
-		_last_azimuth = azimuth;
-		_azimuth_sum = _azimuth_sum+delta_latitude;
-		float latitude_error = azimuth_target-_azimuth_sum;
-		float distance_error = latitude_error*r_alt;
+
+		_azimuth_sum = _azimuth_sum+central_angle;
+		float azimuth_error = azimuth_target-_azimuth_sum;
+		float distance_error = azimuth_error*r_alt;
 
 		float speed_target = distance_error/_tau+_grndspd;
-		_speed_target = constrain_float(speed_target,12,24);
+		_speed_target = constrain_float(speed_target,14,24);
 
 		/*
 		hal.console->printf("X=%f\t Y=%f\t az=%f\t az_sum=%f\t az_t=%f\n",
@@ -291,13 +297,9 @@ void EPR2_Throttle::ini()
 		// we have no idea where we are....
 		return;
 	}
-	_azimuth_ini = atan2f(position.y,position.x);
-
-	if (_azimuth_ini < 0) {
-		_azimuth_sum = -2*M_PI;
-	} else {
-		_azimuth_sum = 0;
-	}
+	float azimuth = atan2f(position.y,position.x);
+	_last_azimuth = azimuth;
+	_azimuth_sum = 0;
 	/*
 	hal.console->printf("Initialisation values: X=%f\t Y=%f\t az=%f\t az_sum=%f\n",
 	                            position.x,
@@ -308,6 +310,6 @@ void EPR2_Throttle::ini()
 	gcs().send_text(MAV_SEVERITY_CRITICAL, "X=%3.2f\t Y=%3.2f\t az_ini=%3.2f\t az_sum=%3.2f\n",
 	                position.x,
 	                position.y,
-					(float)_azimuth_ini,
+					(float)_last_azimuth,
 					(float)_azimuth_sum);
 }

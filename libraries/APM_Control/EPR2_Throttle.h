@@ -58,7 +58,6 @@ private:
 	AP_Float		_azimuth_sum;
 	AP_Float		_speed_target;
 	AP_Float		_tini;
-	AP_Float		_azimuth_ini;
 	AP_Float		_last_speed_update;
 
 	uint32_t _last_t;
