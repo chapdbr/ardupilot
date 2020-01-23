@@ -32,7 +32,7 @@
 #include <AP_VisualOdom/AP_VisualOdom.h>
 #include <AP_OpticalFlow/OpticalFlow.h>
 
-#include "Plane.h" // to access EPR2 controllers
+#include <ArduPlane/Plane.h> // to access EPR2 controllers
 #include "GCS.h"
 
 #include <stdio.h>
