@@ -1349,6 +1349,41 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
     case MAVLINK_MSG_ID_UAVIONIX_ADSB_TRANSCEIVER_HEALTH_REPORT:
         plane.adsb.handle_message(chan, msg);
         break;
+    case MAVLINK_MSG_ID_ATT_POS_MOCAP:
+    	// decode
+    	mavlink_att_pos_mocap_t m;
+		mavlink_msg_att_pos_mocap_decode(msg, &m);
+		// sensor assumed to be at 0,0,0 body-frame; need parameters for this?
+		const Vector3f sensor_offset = {};
+		const Vector3f pos = {
+			m.x,
+			m.y,
+			m.z
+		};
+		plane.epr2AltController.write_alt(m.z);	// EPR2 altitude controller
+		Quaternion attitude = Quaternion(m.q);
+		const float posErr = 0; // parameter required?
+		const float angErr = 0; // parameter required?
+		// correct offboard timestamp to be in local ms since boot
+		uint32_t timestamp_ms = correct_offboard_timestamp_usec_to_ms(m.time_usec, PAYLOAD_SIZE(chan, ATT_POS_MOCAP));
+		const uint32_t reset_timestamp_ms = 0; // no data available
+
+		AP::ahrs().writeExtNavData(sensor_offset,
+								   pos,
+								   attitude,
+								   posErr,
+								   angErr,
+								   timestamp_ms,
+								   reset_timestamp_ms);
+
+		// calculate euler orientation for logging
+		float roll;
+		float pitch;
+		float yaw;
+		attitude.to_euler(roll, pitch, yaw);
+
+		log_vision_position_estimate_data(m.time_usec, m.x, m.y, m.z, roll, pitch, yaw);
+		break;
 
     default:
         handle_common_message(msg);

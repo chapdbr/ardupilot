@@ -2966,7 +2966,6 @@ void GCS_MAVLINK::handle_att_pos_mocap(mavlink_message_t *msg)
         m.y,
         m.z
     };
-    plane.epr2AltController.write_alt(m.z);	// EPR2 altitude controller
     Quaternion attitude = Quaternion(m.q);
     const float posErr = 0; // parameter required?
     const float angErr = 0; // parameter required?
