@@ -18,6 +18,7 @@
 
 #include <AP_HAL/AP_HAL.h>
 #include "EPR2_AltController.h"
+#include <GCS_MAVLink/GCS.h>
 
 extern const AP_HAL::HAL& hal;
 
