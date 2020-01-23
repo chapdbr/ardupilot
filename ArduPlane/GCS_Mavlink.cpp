@@ -1355,7 +1355,6 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
     	mavlink_att_pos_mocap_t m;
 		mavlink_msg_att_pos_mocap_decode(msg, &m);
 		// sensor assumed to be at 0,0,0 body-frame; need parameters for this?
-		const Vector3f sensor_offset = {};
 		const Vector3f pos = {
 			m.x,
 			m.y,
