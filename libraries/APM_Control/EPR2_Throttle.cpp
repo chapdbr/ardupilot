@@ -228,70 +228,75 @@ void EPR2_Throttle::reset_I()
 
 void EPR2_Throttle::update_speed_target()
 {
-	uint32_t tnow = AP_HAL::millis();
-	tnow = (float)tnow * 0.001f;
-	//if (tnow - _last_speed_update >= 0.1)
-	if (tnow - _last_speed_update >= 1) // low rate for debug
+	if (_use_tracking == 1)
 	{
-		// we run this loop at 10 Hz
-		_last_speed_update = tnow;
-		// Calculate delta time
-		float telapsed = tnow - _tini;
-		// Calculate azimuth target
-		float alt_target = _epr2alt.get_target();
-		float r_alt = _radius*sinf(acosf(alt_target/_radius));
-		float c_alt = 2*M_PI*r_alt;
-		float t_trim = c_alt/_grndspd;
-		float omega_trim = 2*M_PI/t_trim;
-		float azimuth_target = (telapsed)*omega_trim;
+		uint32_t tnow = AP_HAL::millis();
+		tnow = (float)tnow * 0.001f;
+		//if (tnow - _last_speed_update >= 0.1)
+		if (tnow - _last_speed_update >= 1) // low rate for debug
+		{
+			// we run this loop at 10 Hz
+			_last_speed_update = tnow;
+			// Calculate delta time
+			float telapsed = tnow - _tini;
+			// Calculate azimuth target
+			float alt_target = _epr2alt.get_target();
+			float r_alt = _radius*sinf(acosf(alt_target/_radius));
+			float c_alt = 2*M_PI*r_alt;
+			float t_trim = c_alt/_grndspd;
+			float omega_trim = 2*M_PI/t_trim;
+			float azimuth_target = (telapsed)*omega_trim;
 
-		// Location from home position
-		Vector2f position;
-		if (!_ahrs.get_relative_position_NE_home(position)) {
-			// we have no idea where we are....
-			return;
-		}
-		float azimuth = atan2f(position.y,position.x);
-		float delta_azimuth = azimuth - _last_azimuth;
-		float central_angle = acosf(cosf(delta_azimuth));
+			// Location from home position
+			Vector2f position;
+			if (!_ahrs.get_relative_position_NE_home(position)) {
+				// we have no idea where we are....
+				return;
+			}
+			float azimuth = atan2f(position.y,position.x);
+			float delta_azimuth = azimuth - _last_azimuth;
+			float central_angle = acosf(cosf(delta_azimuth));
 
-		/*
-		if (delta_azimuth < 0){
-			central_angle = 0; // bad data, aircraft shouldnt go backwards
-		} else {
+			/*
+			if (delta_azimuth < 0){
+				central_angle = 0; // bad data, aircraft shouldnt go backwards
+			} else {
+				_last_azimuth = azimuth;
+			}
+			*/
+			_azimuth_sum = _azimuth_sum+central_angle;
 			_last_azimuth = azimuth;
+			float azimuth_error = azimuth_target-_azimuth_sum;
+			float distance_error = azimuth_error*r_alt;
+
+			float speed_target = distance_error/_tau+_grndspd;
+			_speed_target = constrain_float(speed_target,14,24);
+
+			/*
+			hal.console->printf("X=%f\t Y=%f\t az=%f\t az_sum=%f\t az_t=%f\n",
+											position.x,
+											position.y,
+											azimuth,
+											(float)_azimuth_sum,
+											azimuth_target);
+			*/
+			/*
+			gcs().send_text(MAV_SEVERITY_CRITICAL, "X=%2.1f\t Y=%2.1f\t az=%2.1f\t az_s=%3.1f\t az_t=%3.1f\t err=%2.1f\n",
+					position.x,
+					position.y,
+					azimuth,
+					(float)_azimuth_sum,
+					azimuth_target,
+					distance_error);
+			*/
+			/*
+			gcs().send_text(MAV_SEVERITY_CRITICAL, "az=%2.1f\t az_s=%3.1f\t az_t=%3.1f\t err=%2.1f\n",
+							azimuth,
+							(float)_azimuth_sum,
+							azimuth_target,
+							distance_error);
+			*/
 		}
-		*/
-		_azimuth_sum = _azimuth_sum+central_angle;
-		_last_azimuth = azimuth;
-		float azimuth_error = azimuth_target-_azimuth_sum;
-		float distance_error = azimuth_error*r_alt;
-
-		float speed_target = distance_error/_tau+_grndspd;
-		_speed_target = constrain_float(speed_target,14,24);
-
-		/*
-		hal.console->printf("X=%f\t Y=%f\t az=%f\t az_sum=%f\t az_t=%f\n",
-			                            position.x,
-			                            position.y,
-			                            azimuth,
-										(float)_azimuth_sum,
-										azimuth_target);
-		*/
-		/*
-		gcs().send_text(MAV_SEVERITY_CRITICAL, "X=%2.1f\t Y=%2.1f\t az=%2.1f\t az_s=%3.1f\t az_t=%3.1f\t err=%2.1f\n",
-                position.x,
-                position.y,
-                azimuth,
-				(float)_azimuth_sum,
-				azimuth_target,
-				distance_error);
-		*/
-		gcs().send_text(MAV_SEVERITY_CRITICAL, "az=%2.1f\t az_s=%3.1f\t az_t=%3.1f\t err=%2.1f\n",
-		                azimuth,
-						(float)_azimuth_sum,
-						azimuth_target,
-						distance_error);
 	}
 }
 
@@ -317,9 +322,11 @@ void EPR2_Throttle::ini()
 	                            (float)_azimuth_ini,
 								(float)_azimuth_sum);
 	*/
+	/*
 	gcs().send_text(MAV_SEVERITY_CRITICAL, "X=%3.2f\t Y=%3.2f\t az_ini=%3.2f\t az_sum=%3.2f\n",
 	                position.x,
 	                position.y,
 					(float)_last_azimuth,
 					(float)_azimuth_sum);
+	*/
 }

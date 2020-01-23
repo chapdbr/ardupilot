@@ -39,6 +39,10 @@ public:
 
 	static const struct AP_Param::GroupInfo var_info[];
 
+	float get_radius(void) { return _radius; }
+
+	float get_tracking_status(void) { return _use_tracking; }
+
 private:
     const AP_Vehicle::FixedWing &aparm;
 

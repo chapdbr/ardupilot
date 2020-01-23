@@ -80,6 +80,13 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @User: Advanced
 	AP_GROUPINFO("MAX",      6, EPR2_AltController, _max_angle,        20),
 
+	// @Param: LOADCELL
+	// @DisplayName: Using load cell
+	// @Description: Using load cell.
+	// @Range: 0:Disable,1:Enable
+	// @User: Advanced
+	AP_GROUPINFO("LOADCL",      7, EPR2_AltController, _loadcell,        0),
+
 	AP_GROUPEND
 };
 
@@ -99,11 +106,18 @@ void EPR2_AltController::calc_desired_pitch(void)
 	_last_t = tnow;
 	// Get time delta in s
 	float delta_time    = (float)dt * 0.001f;
-    // Get altitude
+
+	// Get altitude
 	// return a Down position relative to home in meters
 	// if EKF is unavailable will return the baro altitude
+
+	if (_loadcell == 0)
+	{
 	_ahrs.get_relative_position_D_home(_height);
 	_height *= -1.0f;
+	} else	{
+	_height = _sensor_alt;
+	}
 
 	// Calculate the altitude error (m)
 	float alt_error = (_target - _height);
@@ -177,6 +191,13 @@ void EPR2_AltController::calc_desired_pitch(void)
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
 	//_last_out = _last_out * _scaler;
 	_pitch_dem = constrain_float(_last_out, -_max_angle, _max_angle);
+
+	if (tnow - _last_height_update >= 1) // low rate for debug
+	{
+	_last_height_update = tnow;
+	gcs().send_text(MAV_SEVERITY_CRITICAL, "height=%2.2f\n",
+					_height);
+	}
 }
 
 void EPR2_AltController::reset_I()
