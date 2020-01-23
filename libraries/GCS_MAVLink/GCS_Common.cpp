@@ -32,6 +32,7 @@
 #include <AP_VisualOdom/AP_VisualOdom.h>
 #include <AP_OpticalFlow/OpticalFlow.h>
 
+#include "Plane.h" // to access EPR2 controllers
 #include "GCS.h"
 
 #include <stdio.h>
@@ -2965,7 +2966,7 @@ void GCS_MAVLINK::handle_att_pos_mocap(mavlink_message_t *msg)
         m.y,
         m.z
     };
-    plane.epr2AltController.write_alt(m.z); // EPR2 altitude controller
+    plane.epr2AltController.write_alt(m.z);	// EPR2 altitude controller
     Quaternion attitude = Quaternion(m.q);
     const float posErr = 0; // parameter required?
     const float angErr = 0; // parameter required?

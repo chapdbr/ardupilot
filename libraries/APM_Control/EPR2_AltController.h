@@ -39,7 +39,7 @@ public:
 
 	float get_target(void) { return _target; }
 
-	void write_alt(float alt) { _sensor_alt = alt; }
+	void write_alt(float alt);
 
 private:
     const AP_Vehicle::FixedWing &aparm;

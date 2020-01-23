@@ -205,3 +205,8 @@ void EPR2_AltController::reset_I()
 {
 	_pid_info.I = 0;
 }
+
+void EPR2_AltController::write_alt(float alt)
+{
+	_sensor_alt = alt;
+}
