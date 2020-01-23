@@ -1350,6 +1350,7 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
         plane.adsb.handle_message(chan, msg);
         break;
     case MAVLINK_MSG_ID_ATT_POS_MOCAP:
+    {
     	// decode
     	mavlink_att_pos_mocap_t m;
 		mavlink_msg_att_pos_mocap_decode(msg, &m);
@@ -1362,7 +1363,7 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
 		};
 		plane.epr2AltController.write_alt(m.z);	// EPR2 altitude controller
 		break;
-
+    }
     default:
         handle_common_message(msg);
         break;
