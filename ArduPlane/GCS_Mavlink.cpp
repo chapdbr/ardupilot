@@ -1361,28 +1361,6 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
 			m.z
 		};
 		plane.epr2AltController.write_alt(m.z);	// EPR2 altitude controller
-		Quaternion attitude = Quaternion(m.q);
-		const float posErr = 0; // parameter required?
-		const float angErr = 0; // parameter required?
-		// correct offboard timestamp to be in local ms since boot
-		uint32_t timestamp_ms = correct_offboard_timestamp_usec_to_ms(m.time_usec, PAYLOAD_SIZE(chan, ATT_POS_MOCAP));
-		const uint32_t reset_timestamp_ms = 0; // no data available
-
-		AP::ahrs().writeExtNavData(sensor_offset,
-								   pos,
-								   attitude,
-								   posErr,
-								   angErr,
-								   timestamp_ms,
-								   reset_timestamp_ms);
-
-		// calculate euler orientation for logging
-		float roll;
-		float pitch;
-		float yaw;
-		attitude.to_euler(roll, pitch, yaw);
-
-		log_vision_position_estimate_data(m.time_usec, m.x, m.y, m.z, roll, pitch, yaw);
 		break;
 
     default:
