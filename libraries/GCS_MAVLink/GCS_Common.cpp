@@ -2952,7 +2952,7 @@ void GCS_MAVLINK::log_vision_position_estimate_data(const uint64_t usec,
                                            (double)(pitch * RAD_TO_DEG),
                                            (double)(yaw * RAD_TO_DEG));
 }
-
+/*
 void GCS_MAVLINK::handle_att_pos_mocap(mavlink_message_t *msg)
 {
     mavlink_att_pos_mocap_t m;
@@ -2988,7 +2988,7 @@ void GCS_MAVLINK::handle_att_pos_mocap(mavlink_message_t *msg)
 
     log_vision_position_estimate_data(m.time_usec, m.x, m.y, m.z, roll, pitch, yaw);
 }
-
+*/
 void GCS_MAVLINK::handle_command_ack(const mavlink_message_t* msg)
 {
     AP_AccelCal *accelcal = AP::ins().get_acal();
@@ -3201,11 +3201,11 @@ void GCS_MAVLINK::handle_common_message(mavlink_message_t *msg)
     case MAVLINK_MSG_ID_VICON_POSITION_ESTIMATE:
         handle_vicon_position_estimate(msg);
         break;
-
+	/*
     case MAVLINK_MSG_ID_ATT_POS_MOCAP:
         handle_att_pos_mocap(msg);
         break;
-
+	*/
     case MAVLINK_MSG_ID_SYSTEM_TIME:
         handle_system_time_message(msg);
         break;
