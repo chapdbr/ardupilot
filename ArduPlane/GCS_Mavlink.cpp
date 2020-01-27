@@ -1349,11 +1349,11 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
     case MAVLINK_MSG_ID_UAVIONIX_ADSB_TRANSCEIVER_HEALTH_REPORT:
         plane.adsb.handle_message(chan, msg);
         break;
-    case MAVLINK_MSG_ID_ATT_POS_MOCAP:
+    case MAVLINK_MSG_ID_VICON_POSITION_ESTIMATE:
     {
     	// decode
-    	mavlink_att_pos_mocap_t m;
-		mavlink_msg_att_pos_mocap_decode(msg, &m);
+    	mavlink_vicon_position_estimate_t m;
+		mavlink_msg_vicon_position_estimate_decode(msg, &m);
 		plane.epr2AltController.write_alt(m.z);	// EPR2 altitude controller
 		break;
     }
