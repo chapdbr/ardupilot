@@ -193,7 +193,7 @@ void EPR2_AltController::calc_desired_pitch(void)
 	//_last_out = _last_out * _scaler;
 	_pitch_dem = constrain_float(_last_out, -_max_angle, _max_angle);
 
-	if (tnow - _last_height_update >= 1) // low rate for debug
+	if (tnow - _last_height_update >= 1000) // low rate for debug
 	{
 	_last_height_update = tnow;
 	gcs().send_text(MAV_SEVERITY_CRITICAL, "height=%2.2f\n",
