@@ -1359,7 +1359,7 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
 		AP::logger().Write("VISP", "TimeUS,RemTimeUS,PX,PY,PZ,Roll,Pitch,Yaw",
 		                                           "ssmmmddh", "FF000000", "QQffffff",
 		                                           (uint64_t)AP_HAL::micros64(),
-		                                           (uint64_t)usec,
+		                                           (uint64_t)m.usec,
 		                                           (double)m.x,
 		                                           (double)m.y,
 		                                           (double)m.z,
