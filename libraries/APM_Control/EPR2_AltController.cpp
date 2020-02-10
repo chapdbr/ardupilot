@@ -88,6 +88,13 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @User: Advanced
 	AP_GROUPINFO("LOADCL",      7, EPR2_AltController, _loadcell,        0),
 
+	// @Param: DEBUG
+	// @DisplayName: Output debug message
+	// @Description: message.
+	// @Range: 0:Disable,1:Enable
+	// @User: Advanced
+	AP_GROUPINFO("DEBUG",      8, EPR2_AltController, _debug,        0),
+
 	AP_GROUPEND
 };
 
@@ -192,12 +199,14 @@ void EPR2_AltController::calc_desired_pitch(void)
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
 	//_last_out = _last_out * _scaler;
 	_pitch_dem = constrain_float(_last_out, -_max_angle, _max_angle);
-
-	if (tnow - _last_height_update >= 1000) // low rate for debug
+	if (_debug == 1)
 	{
-	_last_height_update = tnow;
-	gcs().send_text(MAV_SEVERITY_CRITICAL, "height=%2.2f\n",
-					_height);
+		if (tnow - _last_height_update >= 1000) // low rate for debug
+		{
+		_last_height_update = tnow;
+		gcs().send_text(MAV_SEVERITY_CRITICAL, "height=%2.2f\n",
+						_height);
+		}
 	}
 }
 

@@ -53,6 +53,7 @@ private:
 	AP_Int16		_max_angle;
 	AP_Int32		_pitch_dem;
 	AP_Int8			_loadcell;
+	AP_Int8			_debug;
 
 	uint32_t _last_t;
 	float _last_out;
