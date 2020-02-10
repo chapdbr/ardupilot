@@ -1355,7 +1355,17 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
     	mavlink_vicon_position_estimate_t m;
 		mavlink_msg_vicon_position_estimate_decode(msg, &m);
 		plane.epr2AltController.write_alt(m.z);	// EPR2 altitude controller
-		log_vision_position_estimate_data(m.usec, m.x, m.y, m.z, m.roll, pitch, yaw)
+		//log_vision_position_estimate_data(m.usec, m.x, m.y, m.z, m.roll, pitch, yaw)
+		AP::logger().Write("VISP", "TimeUS,RemTimeUS,PX,PY,PZ,Roll,Pitch,Yaw",
+		                                           "ssmmmddh", "FF000000", "QQffffff",
+		                                           (uint64_t)AP_HAL::micros64(),
+		                                           (uint64_t)usec,
+		                                           (double)m.x,
+		                                           (double)m.y,
+		                                           (double)m.z,
+		                                           (double)(m.roll * RAD_TO_DEG),
+		                                           (double)(m.pitch * RAD_TO_DEG),
+		                                           (double)(m.yaw * RAD_TO_DEG));
 		break;
     }
     default:
