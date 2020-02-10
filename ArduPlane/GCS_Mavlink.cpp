@@ -1355,6 +1355,7 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
     	mavlink_vicon_position_estimate_t m;
 		mavlink_msg_vicon_position_estimate_decode(msg, &m);
 		plane.epr2AltController.write_alt(m.z);	// EPR2 altitude controller
+		log_vision_position_estimate_data(m.usec, m.x, m.y, m.z, m.roll, pitch, yaw)
 		break;
     }
     default:
