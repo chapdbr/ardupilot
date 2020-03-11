@@ -86,7 +86,7 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 	// @Description: Using load cell.
 	// @Range: 0:Disable,1:Enable
 	// @User: Advanced
-	AP_GROUPINFO("LOADCL",      7, EPR2_AltController, _loadcell,        0),
+	AP_GROUPINFO("LOADCL",      7, EPR2_AltController, _loadcell,        1),
 
 	// @Param: DEBUG
 	// @DisplayName: Output debug message

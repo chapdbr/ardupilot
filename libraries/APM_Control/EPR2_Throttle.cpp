@@ -63,7 +63,7 @@ const AP_Param::GroupInfo EPR2_Throttle::var_info[] = {
 	// @Range: 10 30
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("ASPD",      4, EPR2_Throttle, _aspd,       15),
+	AP_GROUPINFO("ASPD",      4, EPR2_Throttle, _aspd,       18),
 
 	// @Param: MAX_THRUST
 	// @DisplayName: Maximum thrust
@@ -88,7 +88,7 @@ const AP_Param::GroupInfo EPR2_Throttle::var_info[] = {
 	// @Range: 10 30
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("GSPD",      7, EPR2_Throttle, _grndspd,       15),
+	AP_GROUPINFO("GSPD",      7, EPR2_Throttle, _grndspd,       18),
 
 	// @Param: TARGET
 	// @DisplayName: Minimum airspeed
