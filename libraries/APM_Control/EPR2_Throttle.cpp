@@ -63,7 +63,7 @@ const AP_Param::GroupInfo EPR2_Throttle::var_info[] = {
 	// @Range: 10 30
 	// @Increment: 1
 	// @User: Advanced
-	AP_GROUPINFO("ASPD",      4, EPR2_Throttle, _aspd,       18),
+	AP_GROUPINFO("ASPD",      4, EPR2_Throttle, _aspd_target,       18),
 
 	// @Param: MAX_THRUST
 	// @DisplayName: Maximum thrust
@@ -81,7 +81,7 @@ const AP_Param::GroupInfo EPR2_Throttle::var_info[] = {
 	// @User: Advanced
 	AP_GROUPINFO("TRACK",      6, EPR2_Throttle, _use_tracking,        0),
 
-	// @Param: TARGET
+	// @Param: GROUNDSPEED TARGET
 	// @DisplayName: Groundspeed target
 	// @Description: Groundspeed target.
 	// @Units: m/s
@@ -90,7 +90,7 @@ const AP_Param::GroupInfo EPR2_Throttle::var_info[] = {
 	// @User: Advanced
 	AP_GROUPINFO("GSPD",      7, EPR2_Throttle, _grndspd,       18),
 
-	// @Param: TARGET
+	// @Param: AIRSPEED TARGET
 	// @DisplayName: Minimum airspeed
 	// @Description: Minimum airspeed.
 	// @Units: m/s
@@ -116,6 +116,22 @@ const AP_Param::GroupInfo EPR2_Throttle::var_info[] = {
 	// @Increment: 1
 	// @User: Advanced
 	AP_GROUPINFO("RADIUS",      10, EPR2_Throttle, _radius,       15),
+
+	// @Param: RATE LIMITER
+	// @DisplayName: Rate limiter
+	// @Description: Rate limiter
+	// @Range: 0:Disable,1:Enable
+	// @User: Advanced
+	AP_GROUPINFO("RATE_LIM",      11, EPR2_Throttle, _rate_limiter,        1),
+
+	// @Param: MAXIMUM OUTPUT RATE
+	// @DisplayName: Max output rate
+	// @Description: Max output rate.
+	// @Units: %/s
+	// @Range: 0 100
+	// @Increment: 1
+	// @User: Advanced
+	AP_GROUPINFO("MAX_RATE",      12, EPR2_Throttle, _max_rate,       20),
 
 
 	AP_GROUPEND
@@ -150,7 +166,7 @@ int32_t EPR2_Throttle::get_servo_out(void)
 		spd_error = (_speed_target - grndspeed);
 	} else {
 		// Calculate the aspd error
-		spd_error = (_aspd - aspeed);
+		spd_error = (_aspd_target - aspeed);
 	}
 	// Compute proportional component
 	_pid_info.P = spd_error * _kp;
@@ -207,16 +223,27 @@ int32_t EPR2_Throttle::get_servo_out(void)
 	_pid_info.I = constrain_float(_pid_info.I, -intLimScaled, intLimScaled);
 
 	// Save desired, achieved angles and last error
-	_pid_info.desired = _aspd;
+	_pid_info.desired = _aspd_target;
 	_pid_info.actual = aspeed;
 	_last_error = spd_error;
 
 	// Calculate the demanded control command (0-1)
-	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
+	_out = _pid_info.P + _pid_info.I + _pid_info.D;
 	// Command max throttle if airspeed is below minimum airspeed
 	if (aspeed < float(aparm.airspeed_min)) {
-		_last_out = 1;
+		_out = 1;
 	}
+	if (_rate_limiter == 1){
+		float rising_slew_rate = _max_rate * 0.01;
+		float falling_slew_rate = -1 * _max_rate * 0.01;
+		float rate = (_out - _last_out)/delta_time;
+		if (rate > rising_slew_rate){
+			_out = _last_out + delta_time * rising_slew_rate;
+		} else if (rate < falling_slew_rate){
+			_out = _last_out + delta_time * falling_slew_rate;
+		}
+	}
+	_last_out = _out;
 	// Convert to percentage and constrain (0-100)
 	return constrain_float(_last_out * 100, 0, 100);
 }

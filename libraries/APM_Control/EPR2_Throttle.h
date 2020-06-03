@@ -50,10 +50,11 @@ private:
 	AP_Float        _ki;
 	AP_Float        _kd;
 	AP_Int16        _imax;
-	AP_Int16		_aspd;
+	AP_Int16		_aspd_target;
 	AP_Float		_max_thrust;
 
 	AP_Int8			_use_tracking;
+	AP_Int8			_rate_limiter;
 	AP_Int16		_grndspd;
 	AP_Int16		_min_aspd;
 	AP_Int16		_tau;
@@ -63,9 +64,11 @@ private:
 	AP_Float		_speed_target;
 	AP_Float		_tini;
 	AP_Float		_last_speed_update;
+	AP_Float		_max_rate;
 
 	uint32_t _last_t;
 	float _last_out;
+	float _out;
 	float _integrator;///< integrator value
 	float _last_error;///< last error for derivative
 	float _last_derivative;///< last derivative for low-pass filter
