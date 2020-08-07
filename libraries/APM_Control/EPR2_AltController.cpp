@@ -13,8 +13,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//	Code by Bruno Chapdelaine
-//
+//	Bruno Chapdelaine, June 2019
 
 #include <AP_HAL/AP_HAL.h>
 #include "EPR2_AltController.h"
@@ -100,7 +99,7 @@ const AP_Param::GroupInfo EPR2_AltController::var_info[] = {
 
 
 /*
-  internal bank angle controller, called by stabilize
+  EPR2 altitude controller, called by stabilize
 */
 void EPR2_AltController::calc_desired_pitch(void)
 {
@@ -115,15 +114,15 @@ void EPR2_AltController::calc_desired_pitch(void)
 	// Get time delta in s
 	float delta_time    = (float)dt * 0.001f;
 
-	// Get altitude
-	// return a Down position relative to home in meters
+	// If not using a load cell, get altitude from AHRS
+	// returns a Down position relative to home in meters
 	// if EKF is unavailable will return the baro altitude
-
 	if (_loadcell == 0)
 	{
 	_ahrs.get_relative_position_D_home(_height);
 	_height *= -1.0f;
 	} else	{
+	// use alt from loadcell
 	_height = _sensor_alt;
 	}
 
@@ -146,11 +145,10 @@ void EPR2_AltController::calc_desired_pitch(void)
 		float derivative;
 
 		if (isnan(_last_derivative)) {
-			// we've just done a reset, suppress the first derivative
-			// term as we don't want a sudden change in input to cause
-			// a large D output change
+			// we've just done a reset, suppress the first derivative term
 			derivative = 0;
 		} else {
+			// derivative with low pass filter
 			float tau = 1/_fCut;
 			derivative = (2*tau-delta_time)/(2*tau+delta_time)*_last_derivative + 2/(2*tau+delta_time)*(alt_error - _last_error);
 		}
@@ -158,18 +156,15 @@ void EPR2_AltController::calc_desired_pitch(void)
 		// add in derivative component
 		_pid_info.D = derivative * _kd;
 		// update last derivative
-		_last_derivative    = derivative;
+		_last_derivative = derivative;
 	}
 
-	// Multiply roll error by gains.I and integrate
-
-	// Don't integrate if in stabilise mode as the integrator will wind up against the pilots inputs
+	// Multiply error by gains.I and integrate
 	if (_ki > 0) {
 		//only integrate if gain and time step are positive and airspeed above min value.
 		if (dt > 0 && aspeed > float(aparm.airspeed_min)) {
-			// Trapeziodal integration
+			// trapeziodal integration
 		    float integrator_delta = (alt_error + _last_error) * delta_time * 0.5 * _ki;
-
 			// prevent the integrator from increasing if surface defln demand is above the upper limit
 			if (_last_out < -_max_angle) {
                 integrator_delta = MAX(integrator_delta , 0);
@@ -189,19 +184,21 @@ void EPR2_AltController::calc_desired_pitch(void)
     // Constrain the integrator state
     _pid_info.I = constrain_float(_pid_info.I, -intLimScaled, intLimScaled);
 	
-	// Save desired, achieved angles and update last error
+	// Save desired, actual height and update last error
     _pid_info.desired  = _target;
     _pid_info.actual   = _height;
 	_last_error        = alt_error;
 
-
-    // Calculate the demanded control surface deflection (degrees) with the scaler
+    // Calculate the demanded control surface deflection (degrees)
 	_last_out = _pid_info.P + _pid_info.I + _pid_info.D;
-	//_last_out = _last_out * _scaler;
+
+	// Constrain demanded deflection
 	_pitch_dem = constrain_float(_last_out, -_max_angle, _max_angle);
+
+	// Output height to GCS for debug
 	if (_debug == 1)
 	{
-		if (tnow - _last_height_update >= 1000) // low rate for debug
+		if (tnow - _last_height_update >= 1000) // 1 Hz
 		{
 		_last_height_update = tnow;
 		gcs().send_text(MAV_SEVERITY_CRITICAL, "height=%2.2f\n",

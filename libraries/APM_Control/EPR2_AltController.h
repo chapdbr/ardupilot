@@ -14,7 +14,7 @@ public:
         , _ahrs(ahrs)
     {
         AP_Param::setup_object_defaults(this, var_info);
-        // set _last_derivative as invalid when we startup
+        // set last_derivative & last_error as NaN at startup
 		_last_derivative = NAN;
 		_last_error = NAN;
     }
@@ -23,21 +23,25 @@ public:
 	EPR2_AltController(const EPR2_AltController &other) = delete;
 	EPR2_AltController &operator=(const EPR2_AltController&) = delete;
 
+	// Calculate desired pitch from alt error
 	void calc_desired_pitch(void);
 
-	// demanded pitch angle in centi-degrees
-	// should return between -9000 to +9000
+	// Get demanded pitch angle in centi-degrees
 	int32_t get_pitch_demand(void){
 		return int32_t(_pitch_dem);
 	}
 
+	// Reset integrator
 	void reset_I();
 
     const       AP_Logger::PID_Info& get_pid_info(void) const { return _pid_info; }
 
 	static const struct AP_Param::GroupInfo var_info[];
 
-	float get_target(void) { return _target; }
+	// Get alt target
+	float get_target(void){
+		return _target;
+	}
 
 	void write_alt(float alt);
 
@@ -57,17 +61,17 @@ private:
 
 	uint32_t _last_t;
 	float _last_out;
-	float _integrator;///< integrator value
-	float _last_error;///< last error for derivative
-	float _last_derivative;///< last derivative for low-pass filter
-	float _height;/// current height estimate (above field elevation)
-	float _sensor_alt;/// altitude from load cell positive up (m)
+	float _integrator; // integrator value
+	float _last_error; // last error for derivative
+	float _last_derivative; // last derivative for low-pass filter
+	float _height; // current height estimate
+	float _sensor_alt; // altitude from load cell positive up (m)
 	float _last_height_update;
     AP_Logger::PID_Info _pid_info;
 
 	AP_AHRS &_ahrs;
 
-	/// Low pass filter cut frequency for derivative calculation in Hz.
-	static const uint8_t        _fCut = 20;
+	/// Low pass filter cutoff frequency for derivative calculation in Hz.
+	static const uint8_t _fCut = 20;
 
 };
